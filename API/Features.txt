@@ -1,0 +1,21 @@
+Features:
+
+Snip (Mandatory):
+
+Description: When this feature is activated, the video will be paused, and the frame at which it is paused will be extracted. The pre-existing machine learning model will annotate the frame, identifying products within it.
+Note: This feature is mandatory and integral to the extension's core functionality.
+
+Extension Enable/Disable:
+
+Description: Users can enable or disable the extension according to their preferences. When disabled, the extension will not perform any actions on the YouTube videos.
+Note: This feature provides users with control over when the extension is active.
+
+Settings Gearbox:
+
+Description: Users can access a settings menu where they can select specific object categories of interest (e.g., Dresses, Food, etc.) by checking checkboxes. The extension will focus on annotating and displaying products belonging to the selected categories.
+Note: This feature enhances user customization, allowing them to filter and focus on specific types of products.
+
+B - Bookmark Thumbnail:
+
+Description: Users can press the 'B' key to bookmark a specific timestamp in the video. A thumbnail of the frame at that timestamp will be saved as a bookmark, allowing users to revisit and review specific moments in the video easily.
+Note: This feature provides a convenient way for users to save and revisit specific points of interest in the video content.
