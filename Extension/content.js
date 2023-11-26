@@ -51,7 +51,6 @@ function sendMessageToBackground(message) {
       return true; // indicates you wish to send a response asynchronously
     }
   });
-  
   // Function to insert the sidebar HTML into the page
 function insertSidebar() {
     const sidebarHTML = `
