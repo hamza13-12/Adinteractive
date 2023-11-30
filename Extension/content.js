@@ -1,56 +1,56 @@
 
 
 // Function to send a message to the background script
-// function sendMessageToBackground(message) {
-//     return new Promise((resolve, reject) => {
-//       chrome.runtime.sendMessage(message, (response) => {
-//         if (chrome.runtime.lastError) {
-//           reject(chrome.runtime.lastError);
-//         } else {
-//           resolve(response);
-//         }
-//       });
-//     });
-//   }
+function sendMessageToBackground(message) {
+    return new Promise((resolve, reject) => {
+      chrome.runtime.sendMessage(message, (response) => {
+        if (chrome.runtime.lastError) {
+          reject(chrome.runtime.lastError);
+        } else {
+          resolve(response);
+        }
+      });
+    });
+  }
   
   // Function to capture the current video frame
-// async function captureFrame() {
-//   const video = document.querySelector('video');
-//   if (video) {
-//     // Pause the video
-//     video.pause();
+async function captureFrame() {
+  const video = document.querySelector('video');
+  if (video) {
+    // Pause the video
+    video.pause();
 
-//     // Create a canvas to capture the current frame
-//     const canvas = document.createElement('canvas');
-//     canvas.width = video.videoWidth;
-//     canvas.height = video.videoHeight;
-//     const ctx = canvas.getContext('2d');
-//     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    // Create a canvas to capture the current frame
+    const canvas = document.createElement('canvas');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-//     // Convert the frame to a data URL
-//     const frameDataURL = canvas.toDataURL('image/png');
+    // Convert the frame to a data URL
+    const frameDataURL = canvas.toDataURL('image/png');
 
-//     // Send the frame to the background script
-//     const response = await sendMessageToBackground({
-//       action: "processFrame",
-//       dataURL: frameDataURL
-//     });
+    // Send the frame to the background script
+    const response = await sendMessageToBackground({
+      action: "processFrame",
+      dataURL: frameDataURL
+    });
 
-//     // Process the annotations received from the background script
-//     if (response.annotations) {
-//       // TODO: Overlay annotations on the video
-//       console.log(response.annotations);
-//     }
-//   }
-// }
+    // Process the annotations received from the background script
+    if (response.annotations) {
+      // TODO: Overlay annotations on the video
+      console.log(response.annotations);
+    }
+  }
+}
 
 // Listen for a message from the popup or background script
-// chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-//   if (request.action === "togglePause") {
-//     captureFrame().then(sendResponse).catch(console.error);
-//     return true; // indicates you wish to send a response asynchronously
-//   }
-// });
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.action === "togglePause") {
+    captureFrame().then(sendResponse).catch(console.error);
+    return true; // indicates you wish to send a response asynchronously
+  }
+});
 
 
 
@@ -107,7 +107,7 @@ function insertSidebarStyles() {
       box-shadow: 2px 0 5px rgba(0,0,0,0.5);
       padding: 20px 5px;
       box-sizing: border-box;
-      display: flex;
+      display: none;
       flex-direction: column;
       align-items: center;
       justify-content: center;
@@ -139,24 +139,25 @@ insertSidebar();
 insertSidebarimage();
   
   // Function to toggle the sidebar on and off
-// function toggleSidebar(displayState) {
-//   const sidebar = document.getElementById('my-extension-sidebar');
-//   if (sidebar) {
-//     sidebar.style.display = displayState;
-//   }
-// }
+function toggleSidebar(displayState) {
+  const sidebar = document.getElementById('my-extension-sidebar');
+  if (sidebar) {
+    sidebar.style.display = displayState;
+  }
+}
 
 // Function to handle video play and pause events
-// function handleVideoPlayback() {
-//   const video = document.querySelector('video');
-//   if (video) {
-//     video.addEventListener('pause', () => toggleSidebar('flex'));
-//     video.addEventListener('play', () => toggleSidebar('none'));
-//   }
-// }
+function handleVideoPlayback() {
+  const video = document.querySelector('video');
+  console.log(video);
+  if (video) {
+    video.addEventListener('pause', () => toggleSidebar('flex'));
+    video.addEventListener('play', () => toggleSidebar('none'));
+  }
+}
 
 // Initially hide the sidebar
-// toggleSidebar('none');
+toggleSidebar('none');
 
 // Start handling video playback events
-// handleVideoPlayback();
+handleVideoPlayback();
