@@ -12,7 +12,7 @@ function sendMessageToBackground(message) {
       });
     });
   }
-  
+
   // Function to capture the current video frame
 async function captureFrame() {
   const video = document.querySelector('video');
@@ -29,7 +29,6 @@ async function captureFrame() {
 
     // Convert the frame to a data URL
     const frameDataURL = canvas.toDataURL('image/png');
-    console.log(frameDataURL);
     // Send the frame to the background script
     const response = await sendMessageToBackground({
       action: "processFrame",
