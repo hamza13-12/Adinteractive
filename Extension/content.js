@@ -29,7 +29,7 @@ async function captureFrame() {
 
     // Convert the frame to a data URL
     const frameDataURL = canvas.toDataURL('image/png');
-
+    console.log(frameDataURL);
     // Send the frame to the background script
     const response = await sendMessageToBackground({
       action: "processFrame",
@@ -140,6 +140,9 @@ insertSidebarimage();
   
   // Function to toggle the sidebar on and off
 function toggleSidebar(displayState) {
+  if (displayState === 'flex') {
+    captureFrame();
+  }
   const sidebar = document.getElementById('my-extension-sidebar');
   if (sidebar) {
     sidebar.style.display = displayState;
