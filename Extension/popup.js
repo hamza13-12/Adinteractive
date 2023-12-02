@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
     toggleButton.addEventListener('click', () => {
       // Send a message to the content script to pause the video
       chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
+        console.log(tabs)
         chrome.tabs.sendMessage(tabs[0].id, {action: "togglePause"});
       });
     });

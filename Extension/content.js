@@ -51,14 +51,17 @@ function sendMessageToBackground(message) {
       return true; // indicates you wish to send a response asynchronously
     }
   });
+
   // Function to insert the sidebar HTML into the page
-function insertSidebar() {
+  function insertSidebar() {
     const sidebarHTML = `
-      <div id="my-extension-sidebar" style="display: none;">
-        <a href="#" id="bookmark-icon" class="sidebar-icon">🔖</a>
-        <a href="#" id="settings-icon" class="sidebar-icon">⚙️</a>
-        <a href="#" id="info-icon" class="sidebar-icon">❓</a>
-      </div>
+    <div class="sidebar">
+      <div class="container-ext">
+          <img class="image-class" src="${chrome.runtime.getURL('sidebar/bookmarks.png')}" alt="">
+          <img class="image-class" src="${chrome.runtime.getURL('sidebar/help-circle.png')}" alt="">
+          <img class="image-class" src="${chrome.runtime.getURL('sidebar/settings.png')}" alt="">
+      </div>  
+    </div>
     `;
     document.body.insertAdjacentHTML('beforeend', sidebarHTML);
   }
@@ -67,33 +70,23 @@ function insertSidebar() {
   function insertSidebarStyles() {
     const style = document.createElement('style');
     style.textContent = `
-      #my-extension-sidebar {
-        position: fixed;
-        top: 50%;
-        left: 0;
-        transform: translateY(-50%);
-        background: #ffffff;
-        border-radius: 0 5px 5px 0;
-        box-shadow: 2px 0 5px rgba(0,0,0,0.5);
-        padding: 20px 5px;
-        box-sizing: border-box;
-        display: none;
+      .container-ext{
+        height: 250px;
+        width: 50px;
+        background-color: #D6D6D6;
+        display: flex;
         flex-direction: column;
+        justify-content: space-between;
         align-items: center;
-        justify-content: center;
-        z-index: 10000;
-      }
-      .sidebar-icon {
-        display: block;
-        margin: 8px 0;
-        text-decoration: none;
-        color: #000000;
-        font-size: 24px;
-        transition: transform 0.2s ease-in-out;
-      }
-      .sidebar-icon:hover {
-        transform: scale(1.3);
-      }
+        padding: 20px;
+        border: 1px solid black;
+        border-radius: 20px;
+    }
+    
+    .image-class{
+        height: 50px;
+        width: 50px;
+    }
     `;
     document.head.appendChild(style);
   }
@@ -101,10 +94,11 @@ function insertSidebar() {
   // Insert the sidebar and its styles when the content script is loaded
   insertSidebarStyles();
   insertSidebar();
+  console.log(document.querySelector(".sidebar"))
   
   // Function to toggle the sidebar on and off
   function toggleSidebar(displayState) {
-    const sidebar = document.getElementById('my-extension-sidebar');
+    const sidebar = document.querySelector('.sidebar');
     if (sidebar) {
       sidebar.style.display = displayState;
     }
