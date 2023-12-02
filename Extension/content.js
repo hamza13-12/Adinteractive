@@ -1,12 +1,14 @@
 // content.js
 
-// Function to send a message to the background script
+// Utility function to send a message to the background script
 function sendMessageToBackground(message) {
     return new Promise((resolve, reject) => {
       chrome.runtime.sendMessage(message, (response) => {
         if (chrome.runtime.lastError) {
+          // If an error occurs, reject the promise
           reject(chrome.runtime.lastError);
         } else {
+          // If everything is fine, resolve the promise with the response
           resolve(response);
         }
       });
@@ -54,38 +56,56 @@ function sendMessageToBackground(message) {
 
   // Function to insert the sidebar HTML into the page
   function insertSidebar() {
-    const sidebarHTML = `
-    <div class="sidebar">
+    // Find the video container on the page
+    const sidebarParent = document.querySelector(".html5-video-container")
+    
+    // Create a div element for the sidebar
+    const sidebarElement = document.createElement('div');
+    sidebarElement.className = 'sidebar';
+    sidebarElement.innerHTML = `
       <div class="container-ext">
           <img class="image-class" src="${chrome.runtime.getURL('sidebar/bookmarks.png')}" alt="">
           <img class="image-class" src="${chrome.runtime.getURL('sidebar/help-circle.png')}" alt="">
           <img class="image-class" src="${chrome.runtime.getURL('sidebar/settings.png')}" alt="">
-      </div>  
-    </div>
-    `;
-    document.body.insertAdjacentHTML('beforeend', sidebarHTML);
+      </div>
+  `;
+
+  // Append the sidebar inside the video container
+  sidebarParent.appendChild(sidebarElement);
   }
   
   // Function to insert the sidebar CSS into the page
   function insertSidebarStyles() {
     const style = document.createElement('style');
     style.textContent = `
-      .container-ext{
-        height: 250px;
-        width: 50px;
-        background-color: #D6D6D6;
+    .fade-in-image { animation: fadeIn 5s; }
+
+    @keyframes fadeIn {
+      0% { opacity: 0; }
+      100% { opacity: 1; }
+    }    
+
+    .sidebar{
+      position: relative;
+      top: 150px;
+    }
+
+    .container-ext{
+        height: 150px;
+        width: 20px;
+        margin-left: 1rem;
+        background-color: #d6d6d6bf;
         display: flex;
         flex-direction: column;
         justify-content: space-between;
         align-items: center;
         padding: 20px;
-        border: 1px solid black;
         border-radius: 20px;
     }
     
     .image-class{
-        height: 50px;
-        width: 50px;
+        height: 25px;
+        width: 25px;
     }
     `;
     document.head.appendChild(style);
@@ -94,11 +114,13 @@ function sendMessageToBackground(message) {
   // Insert the sidebar and its styles when the content script is loaded
   insertSidebarStyles();
   insertSidebar();
+
   console.log(document.querySelector(".sidebar"))
-  
+
   // Function to toggle the sidebar on and off
   function toggleSidebar(displayState) {
     const sidebar = document.querySelector('.sidebar');
+    const widget = document.querySelector('.container-ext')
     if (sidebar) {
       sidebar.style.display = displayState;
     }

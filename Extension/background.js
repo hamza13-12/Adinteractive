@@ -12,7 +12,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
   // If the content script asks to process the frame
   if (request.action === "processFrame" && extensionEnabled) {
-    // Here you would send the frame to your Flask API
+    // Send the frame to your Flask API here
     // For now, we'll just simulate a response
     setTimeout(() => {
       sendResponse({ annotations: "Dummy annotations data" });
