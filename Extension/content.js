@@ -113,6 +113,7 @@ function insertSidebar() {
   // Function to handle video play and pause events
   function handleVideoPlayback() {
     const video = document.querySelector('video');
+    console.log(video);
     if (video) {
       video.addEventListener('pause', () => toggleSidebar('flex'));
       video.addEventListener('play', () => toggleSidebar('none'));
