@@ -64,9 +64,17 @@ function sendMessageToBackground(message) {
     sidebarElement.className = 'sidebar';
     sidebarElement.innerHTML = `
       <div class="container-ext">
+        <button>
           <img class="image-class" src="${chrome.runtime.getURL('sidebar/bookmarks.png')}" alt="">
+        </button>
+
+        <button>
           <img class="image-class" src="${chrome.runtime.getURL('sidebar/help-circle.png')}" alt="">
+        </button>
+
+        <button>
           <img class="image-class" src="${chrome.runtime.getURL('sidebar/settings.png')}" alt="">
+        </button>
       </div>
   `;
 
@@ -78,14 +86,29 @@ function sendMessageToBackground(message) {
   function insertSidebarStyles() {
     const style = document.createElement('style');
     style.textContent = `
-    .fade-in-image { animation: fadeIn 5s; }
+
 
     @keyframes fadeIn {
-      0% { opacity: 0; }
-      100% { opacity: 1; }
-    }    
+      
+      0% {
+        transform: translateX(-70px);
+      }
+      100% {
+
+        transform: translateX(0px);
+    }}
+
+    @keyframes fadeOut {
+      0% {
+        transform: translateX(0px);
+      }
+      100% {
+        transform: translateX(-70px);
+    }}
+
 
     .sidebar{
+      animation: fadeIn 0.5s;
       position: relative;
       top: 150px;
     }
@@ -107,9 +130,20 @@ function sendMessageToBackground(message) {
         height: 25px;
         width: 25px;
     }
+    button{
+      background-color: transparent;
+      border: none;
+    }
+    button:hover{
+      cursor: pointer;
+    }
+
+
     `;
     document.head.appendChild(style);
   }
+  
+
   
   // Insert the sidebar and its styles when the content script is loaded
   insertSidebarStyles();
@@ -131,8 +165,20 @@ function sendMessageToBackground(message) {
     const video = document.querySelector('video');
     console.log(video);
     if (video) {
-      video.addEventListener('pause', () => toggleSidebar('flex'));
-      video.addEventListener('play', () => toggleSidebar('none'));
+      video.addEventListener('pause', () =>{ 
+        toggleSidebar('flex')
+        document.querySelector('.sidebar').style.animationName = 'fadeIn';
+
+    });
+      video.addEventListener('play', () => {
+        document.querySelector('.sidebar').style.animationName = 'fadeOut';
+
+        setTimeout(() => {
+          toggleSidebar('none')
+        }, 500);
+
+      }
+        );
     }
   }
   
