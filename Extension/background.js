@@ -1,22 +1,17 @@
 // background.js
 
-// Flag to keep track of extension state
-let extensionEnabled = false;
+chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
+  console.log(
+    sender.tab
+      ? "from a content script:" + sender.tab.url
+      : "from the extension"
+  );
+  if (request.action === "processFrame") {
+    // Use the dataURL for whatever you need
+    // Process Api here
+    // send the json from api file as response
 
-// Listen for messages from content scripts
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.action === "toggleExtension") {
-    extensionEnabled = !extensionEnabled;
-    sendResponse({status: extensionEnabled ? "enabled" : "disabled"});
+    sendResponse({ farewell: "goodby" });
   }
-
-  // If the content script asks to process the frame
-  if (request.action === "processFrame" && extensionEnabled) {
-    // Send the frame to your Flask API here
-    // For now, we'll just simulate a response
-    setTimeout(() => {
-      sendResponse({ annotations: "Dummy annotations data" });
-    }, 1000);
-    return true; // indicates you wish to send a response asynchronously
-  }
+  return true;
 });
