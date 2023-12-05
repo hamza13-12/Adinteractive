@@ -2,6 +2,7 @@
 
 // Flag to keep track of extension state
 let extensionEnabled = false;
+console.log("Toggle Extension: ", extensionEnabled)
 
 // Listen for messages from content scripts
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {

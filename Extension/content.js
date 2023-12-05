@@ -31,6 +31,7 @@ function sendMessageToBackground(message) {
   
       // Convert the frame to a data URL
       const frameDataURL = canvas.toDataURL('image/png');
+      console.log("Frame Data:", frameDataURL)
   
       // Send the frame to the background script
       const response = await sendMessageToBackground({
@@ -120,7 +121,6 @@ function sendMessageToBackground(message) {
   // Function to toggle the sidebar on and off
   function toggleSidebar(displayState) {
     const sidebar = document.querySelector('.sidebar');
-    const widget = document.querySelector('.container-ext')
     if (sidebar) {
       sidebar.style.display = displayState;
     }
@@ -135,6 +135,7 @@ function sendMessageToBackground(message) {
       video.addEventListener('play', () => toggleSidebar('none'));
     }
   }
+  
   
   // Initially hide the sidebar
   toggleSidebar('none');
