@@ -1,37 +1,33 @@
 // background.js
 
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
-  console.log(sender.tab ? "from a content script:" + sender.tab.url : "from the extension");
-  console.log("This is request: ", request);
-
   if (request.action === "processFrame") {
     const apiUrl = "http://192.168.10.2:5000/"; // Flask API
     const data = {
       frameData: request.dataURL,
-      movieName: "granTurismo" // Hardcoded for now 
+      movieName: "granTurismo", // Hardcoded for now
     };
 
     // Log the JSON request
     console.log("JSON request being sent:", JSON.stringify(data));
 
     fetch(apiUrl, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify(data),
     })
-    .then(response => response.json())
-    .then(data => {
-      console.log('Success:', data);
-      sendResponse({ farewell: "response received", data: data });
-    })
-    .catch((error) => {
-      console.error('Error:', error);
-      sendResponse({ farewell: "error", error: error });
-    });
+      .then((response) => response.json())
+      .then((data) => {
+        console.log("Success:", data);
+        sendResponse({ farewell: "response received", data: data });
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        sendResponse({ farewell: "error", error: error });
+      });
 
     return true; // indicates you wish to send a response asynchronously
   }
 });
-

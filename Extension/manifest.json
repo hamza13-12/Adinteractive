@@ -24,12 +24,15 @@
   },
   "web_accessible_resources": [
     {
-      "resources": ["sidebar/bookmarks.png", "sidebar/help-circle.png", "sidebar/settings.png"],
+      "resources": [
+        "sidebar/bookmarks.png",
+        "sidebar/help-circle.png",
+        "sidebar/settings.png",
+        "images/logo_128.png",
+        "images/graylogo_128.png"
+      ],
       "matches": ["<all_urls>"]
     }
   ],
-  "host_permissions": [
-    "file://*/*",
-    "*://*/*"
-  ]
+  "host_permissions": ["file://*/*", "*://*/*"]
 }

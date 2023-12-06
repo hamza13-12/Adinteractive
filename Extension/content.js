@@ -1,5 +1,7 @@
 // content.js
 
+// Function to send a message to the background script
+// The message contains the current video frame as a data URL
 function sendMessageToBackground(message) {
   (async () => {
     const response = await chrome.runtime.sendMessage(message);
@@ -7,10 +9,25 @@ function sendMessageToBackground(message) {
     if (response && response.data) {
       displayAnnotations(response.data);
     }
+    // response is json from api
+    // use it to display the pointers on the video
+    return response;
   })();
 }
 
+// Function to fetch the extension state from storage
+// logo function takes the state of the extension as an argument
+// and changes the logo accordingly
+// if the state is true then the logo is colored
+// else the logo is gray
+chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
+  console.log(request.state);
+  logo(request.state);
+  return true;
+});
+
 // Function to capture the current video frame
+// and send it to the background script
 async function captureFrame() {
   const video = document.querySelector("video");
   if (video) {
@@ -26,7 +43,6 @@ async function captureFrame() {
 
     // Convert the frame to a data URL
     const frameDataURL = canvas.toDataURL("image/png");
-    console.log(frameDataURL);
     // Send the frame to the background script
     sendMessageToBackground({
       action: "processFrame",
@@ -36,54 +52,75 @@ async function captureFrame() {
 }
 
 function displayAnnotations(data) {
-  const video = document.querySelector('video');
+  const video = document.querySelector("video");
   if (video) {
     const videoContainer = document.querySelector(".html5-video-container");
     // Log video dimensions
-    console.log('Video Dimensions:', video.offsetWidth, video.offsetHeight);
+    console.log("Video Dimensions:", video.offsetWidth, video.offsetHeight);
 
-    data.forEach(item => {
+    data.forEach((item) => {
       // Log received coordinates
-      console.log('Received Coordinates:', item.coordinates);
+      console.log("Received Coordinates:", item.coordinates);
 
       // Calculate dot positions
       const dotX = item.coordinates[0] * video.offsetWidth;
       const dotY = item.coordinates[1] * video.offsetHeight;
 
       // Log calculated dot positions
-      console.log('Dot Position:', dotX, dotY);
+      console.log("Dot Position:", dotX, dotY);
 
-      const dot = document.createElement('div');
-      dot.className = 'red-dot';
-      dot.style.position = 'absolute';
+      const dot = document.createElement("div");
+      dot.className = "red-dot";
+      dot.style.position = "absolute";
       dot.style.left = `${dotX}px`;
       dot.style.top = `${dotY}px`;
-      dot.style.width = '10px';
-      dot.style.height = '10px';
-      dot.style.backgroundColor = 'red';
-      dot.style.borderRadius = '50%';
-      dot.style.cursor = 'pointer';
+      dot.style.width = "10px";
+      dot.style.height = "10px";
+      dot.style.backgroundColor = "red";
+      dot.style.borderRadius = "50%";
+      dot.style.cursor = "pointer";
 
       // Event listener for hover
-      dot.addEventListener('mouseenter', () => {
+      dot.addEventListener("mouseenter", () => {
         // Show sneak peek of the product link
         showSneakPeek(dot, item.link);
       });
 
       // Event listener for click
-      dot.addEventListener('click', () => {
-        window.open(item.link, '_blank'); // Open link in new tab
+      dot.addEventListener("click", () => {
+        window.open(item.link, "_blank"); // Open link in new tab
       });
 
-      videoContainer.appendChild(dot); 
+      videoContainer.appendChild(dot);
     });
   }
 }
 
-function showSneakPeek(dot, link) {
-  // Implement function to show sneak peek of the product link
-  // This could be a tooltip or a small popup near the dot
-  //Refer to figma design for more details
+function showSneakPeek(dot, link) {}
+// Implement function to show sneak peek of the product link
+// This could be a tooltip or a small popup near the dot
+//Refer to figma design for more details
+// Logo Function to insert the logo HTML into the page
+
+function logo(state) {
+  const sidebarParent = document.querySelector(".html5-video-container");
+  const logo = document.createElement("img");
+  if (state) {
+    logo.src = chrome.runtime.getURL("images/logo_128.png");
+  } else {
+    logo.src = chrome.runtime.getURL("images/graylogo_128.png");
+  }
+  logo.style.height = "70px";
+  logo.style.width = "70px";
+  logo.style.position = "absolute";
+  logo.style.top = "10px";
+  logo.style.right = "10px";
+
+  const button = document.createElement("button");
+  button.style.background = "transparent";
+  button.style.border = "none";
+  button.appendChild(logo);
+  sidebarParent.appendChild(button);
 }
 
 // Function to insert the sidebar HTML into the page
@@ -179,12 +216,6 @@ function insertSidebarStyles() {
   document.head.appendChild(style);
 }
 
-// Insert the sidebar and its styles when the content script is loaded
-insertSidebarStyles();
-insertSidebar();
-
-console.log(document.querySelector(".sidebar"));
-
 // Function to toggle the sidebar on and off
 function toggleSidebar(displayState) {
   const sidebar = document.querySelector(".sidebar");
@@ -205,10 +236,8 @@ function handleVideoPlayback() {
     });
     video.addEventListener("play", () => {
       document.querySelector(".sidebar").style.animationName = "fadeOut";
-
       //Function call to remove annotations
       removeAnnotations();
-
       setTimeout(() => {
         toggleSidebar("none");
       }, 500);
@@ -217,14 +246,17 @@ function handleVideoPlayback() {
 }
 
 function removeAnnotations() {
-  const dots = document.querySelectorAll('.red-dot');
-  dots.forEach(dot => {
+  const dots = document.querySelectorAll(".red-dot");
+  dots.forEach((dot) => {
     dot.remove(); // Removes the dot from the DOM
   });
 }
 
+logo(false);
+// Insert the sidebar and its styles when the content script is loaded
+insertSidebarStyles();
+insertSidebar();
 // Initially hide the sidebar
 toggleSidebar("none");
-
 // Start handling video playback events
 handleVideoPlayback();
