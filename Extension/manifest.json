@@ -29,7 +29,8 @@
         "sidebar/help-circle.png",
         "sidebar/settings.png",
         "images/logo_128.png",
-        "images/graylogo_128.png"
+        "images/graylogo_128.png",
+        "images/patreon.png"
       ],
       "matches": ["<all_urls>"]
     }

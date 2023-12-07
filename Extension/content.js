@@ -150,6 +150,13 @@ function insertSidebar() {
             "sidebar/settings.png"
           )}" alt="">
         </button>
+
+
+        <button id="setting">
+          <img class="image-class image-opacity" src="${chrome.runtime.getURL(
+            "images/patreon.png"
+          )}" alt="">
+        </button>
       </div>
   `;
 
@@ -162,6 +169,8 @@ function insertSidebarStyles() {
   const style = document.createElement("style");
   style.textContent = `
     @keyframes fadeIn {
+
+
       
       0% {
         transform: translateX(-70px);
@@ -188,13 +197,13 @@ function insertSidebarStyles() {
     }
 
     .container-ext{
-        height: 150px;
         width: 20px;
         margin-left: 1rem;
         background-color: #d6d6d6bf;
         display: flex;
         flex-direction: column;
         justify-content: space-between;
+        gap: 30px;
         align-items: center;
         padding: 20px;
         border-radius: 20px;
@@ -203,6 +212,9 @@ function insertSidebarStyles() {
     .image-class{
         height: 25px;
         width: 25px;
+    }
+    .image-opacity{
+      opacity: 0.5;
     }
     container-ext, button{
       background-color: transparent;
