@@ -133,7 +133,7 @@ function insertSidebar() {
   sidebarElement.className = "sidebar";
   sidebarElement.innerHTML = `
       <div class="container-ext">
-        <button id="bookmarkButton" type="button" onclick="bookmarkfunction()">
+        <button id="bookmarkButton" type="button">
           <img class="image-class" src="${chrome.runtime.getURL(
             "sidebar/bookmarks.png"
           )}" alt="">
@@ -169,9 +169,6 @@ function insertSidebarStyles() {
   const style = document.createElement("style");
   style.textContent = `
     @keyframes fadeIn {
-
-
-      
       0% {
         transform: translateX(-70px);
       }
@@ -179,6 +176,7 @@ function insertSidebarStyles() {
 
         transform: translateX(0px);
     }}
+
     @keyframes fadeOut {
       0% {
         transform: translateX(0px);
@@ -186,9 +184,6 @@ function insertSidebarStyles() {
       100% {
         transform: translateX(-70px);
     }}
-
-
-
 
     .sidebar{
       animation: fadeIn 0.5s;
@@ -228,6 +223,15 @@ function insertSidebarStyles() {
   document.head.appendChild(style);
 }
 
+function insertBookmarkPanelStyles() {
+  const bookmarksStyle = document.createElement("style");
+  //Add bookmark panel styles here
+  bookmarksStyle.textContent = `
+  
+  `;
+  document.head.appendChild(bookmarksStyle);
+}
+
 // Function to toggle the sidebar on and off
 function toggleSidebar(displayState) {
   const sidebar = document.querySelector(".sidebar");
@@ -255,6 +259,95 @@ function handleVideoPlayback() {
       }, 500);
     });
   }
+
+  //Event listeners for bookmarks 
+  document.addEventListener('keydown', function(event) {
+    if (event.key === 'b' || event.key === 'B') {
+      bookmarkCurrentFrame();
+    }
+  });
+
+  document.getElementById('bookmarkButton').addEventListener('click', bookmarkCurrentFrame);
+}
+
+function bookmarkCurrentFrame() {
+  const video = document.querySelector("video");
+  if (video) {
+    const currentTime = video.currentTime; // Get current time for the bookmark
+    captureFrame().then(frameDataURL => {
+      // Save the bookmark data, for now we'll log it to the console
+      //console.log('Bookmark saved at:', currentTime, 'with thumbnail:', frameDataURL);
+      saveBookmark({ time: currentTime, thumbnail: frameDataURL });
+
+      // Update the UI with the new bookmark
+      insertBookmarkPanelStyles();
+      renderBookmarks();
+      
+    });
+  }
+}
+
+// Function to save a bookmark
+function saveBookmark(bookmark) {
+  chrome.storage.local.get({ bookmarks: [] }, function(result) {
+    const bookmarks = result.bookmarks;
+    bookmarks.push(bookmark);
+    chrome.storage.local.set({ bookmarks: bookmarks }, function() {
+      console.log('Bookmark saved.');
+    });
+  });
+}
+
+function renderBookmarks() {
+  const videoContainer = document.querySelector(".html5-video-container");
+  const bookmarksPanel = document.createElement("div");
+  bookmarksPanel.className = "bookmarks-panel";
+
+  chrome.storage.local.get({ bookmarks: [] }, function(result) {
+    result.bookmarks.forEach((bookmark, index) => {
+      const bookmarkThumbnail = document.createElement("div");
+      bookmarkThumbnail.className = "bookmark-thumbnail";
+
+      const thumbnailImage = document.createElement("img");
+      thumbnailImage.src = bookmark.thumbnail;
+      thumbnailImage.className = "thumbnail-image";
+      
+      const timestamp = document.createElement("div");
+      timestamp.className = "timestamp";
+      timestamp.textContent = formatTime(bookmark.time);
+
+      const closeButton = document.createElement("button");
+      closeButton.className = "close-button";
+      closeButton.textContent = "X";
+      closeButton.onclick = function() {
+        // Remove this bookmark
+        result.bookmarks.splice(index, 1);
+        chrome.storage.local.set({ bookmarks: result.bookmarks }, renderBookmarks);
+      };
+
+      bookmarkThumbnail.appendChild(thumbnailImage);
+      bookmarkThumbnail.appendChild(timestamp);
+      bookmarkThumbnail.appendChild(closeButton);
+
+      thumbnailImage.onclick = function() {
+        document.querySelector("video").currentTime = bookmark.time;
+      };
+
+      bookmarksPanel.appendChild(bookmarkThumbnail);
+    });
+    // If a bookmarks panel already exists, remove it before appending the new one
+    const existingPanel = videoContainer.querySelector('.bookmarks-panel');
+    if (existingPanel) {
+      existingPanel.remove();
+    }
+    videoContainer.appendChild(bookmarksPanel);
+  });
+}
+
+function formatTime(seconds) {
+  const date = new Date(0);
+  date.setSeconds(seconds);
+  return date.toISOString().substr(11, 8);
 }
 
 function removeAnnotations() {
