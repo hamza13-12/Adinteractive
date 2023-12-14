@@ -118,7 +118,6 @@ function showSneakPeek(dot, link) {}
 // This could be a tooltip or a small popup near the dot
 //Refer to figma design for more details
 // Logo Function to insert the logo HTML into the page
-
 // Function to insert the sidebar HTML into the page
 
 function insertSidebar() {
@@ -153,8 +152,6 @@ function insertSidebar() {
           )}" alt="">
         </button>
       </div>
-
-
   `;
 
   // Append the sidebar inside the video container
@@ -166,8 +163,6 @@ function insertSidebarStyles() {
   const style = document.createElement("style");
   style.textContent = `
     @keyframes fadeIn {
-
-
       
       0% {
         transform: translateX(-70px);
@@ -193,8 +188,6 @@ function insertSidebarStyles() {
       position: absolute;
       top: 150px;
       z-index: 1000;
-
-
     }
 
     .container-ext{
@@ -229,27 +222,28 @@ function insertSidebarStyles() {
     position: absolute;
     top: 14px;
     right: 0px;
-    background-color: white;
-    opacity: 0.8;
+    background-color: #d6d6d6bf;
     z-index: 1001;
-
-
+    border-radius: 20px 0px 0px 20px;
+    width: 200px;
+    padding:25px;
+    height: 100vh;
   }
 
 .Bookmarkedframes {
   display: flex;
   flex-direction: column;
   align-items: center;
+  gap: 20px;
   overflow: scroll;
-  height:75vh;
+  height:66vh;
+  margin-top: 34px;
+  padding: 20px;
 }
 
 .Bookmarkedframes img {
-  padding: 20px;
   width: 200px;
   height: 100px;
-  object-fit: cover;
-
 }
 
 .image{
@@ -258,16 +252,28 @@ function insertSidebarStyles() {
 
 }
 .time {
-  font-size: 10px;
+  font-size: 15px;
   font-weight: bold;
+  color: white;
   position: absolute;
-  color: black;
-  bottom: 20px;
-  right: 10px;
+  bottom: 9px;
+  right: 7px;
 
 }
 .Bookmarkedframes::-webkit-scrollbar {
   display: none;
+}
+
+.clearAll{
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  cursor: pointer;
+  border: 1px solid black;
+  border-radius: 20px;
+  padding: 10px;
+  color: black;
+  display:block;
 }
     `;
   document.head.appendChild(style);
@@ -338,20 +344,12 @@ function handleVideoPlayback() {
       bookmarkCurrentFrame();
     }
   });
-
-  document
-    .getElementById("bookmarkButton")
-    .addEventListener("click", bookmarkCurrentFrame);
 }
 // ================= Buttons Implementaion =================
 
 //Event listeners for bookmarks
 document
   .getElementById("bookmarkButton")
-  .addEventListener("click", bookmarkCurrentFrame);
-
-document
-  .getElementById("settings-sidebar")
   .addEventListener("click", BookMarkSlide);
 
 function bookmarkCurrentFrame() {
@@ -365,8 +363,6 @@ function bookmarkCurrentFrame() {
       saveBookmark({ time: currentTime, thumbnail: frameDataURL });
 
       // Update the UI with the new bookmark
-      insertBookmarkPanelStyles();
-      renderBookmarks();
     });
   }
 }
@@ -381,7 +377,6 @@ function saveBookmark(bookmark) {
     });
   });
 }
-
 function BookMarkSlide() {
   toggleSidebar("none");
   logo(false);
@@ -389,24 +384,32 @@ function BookMarkSlide() {
   document.querySelector(".ytp-chrome-bottom").style.display = "none";
   const box = document.createElement("div");
   box.className = "box";
-  const Bookmarkedframes = document.createElement("div");
-  Bookmarkedframes.className = "Bookmarkedframes";
+  box.id = "box";
 
-  chrome.storage.local.get({ bookmarks: [] }, function (result) {
-    result.bookmarks.forEach((bookmark, index) => {
-      console.log(bookmark.thumbnail);
+  const close = document.createElement("img");
+  close.src = chrome.runtime.getURL("images/close.png");
+  close.style.height = "20px";
+  close.style.width = "20px";
+  close.style.position = "absolute";
+  close.style.top = "10px";
+  close.style.right = "10px";
+  close.style.cursor = "pointer";
 
-      const image = document.createElement("div");
-      image.className = "image";
-      image.innerHTML = `
-              <div class="time">${bookmark.time}</div>
-              <img src="${bookmark.thumbnail}" alt="nothing here" />
-            `;
-      Bookmarkedframes.appendChild(image);
-    });
-    box.appendChild(Bookmarkedframes);
-    sidebar.insertAdjacentElement("beforebegin", box);
-  });
+  const clearAll = document.createElement("Button");
+  clearAll.id = "clearAll";
+  clearAll.className = "clearAll";
+  clearAll.innerHTML = "Clear All";
+  clearAll.addEventListener("click", ClearAllBookMarks);
+  box.appendChild(clearAll);
+
+  const button = document.createElement("button");
+  button.style.background = "transparent";
+  button.style.border = "none";
+  button.appendChild(close);
+  button.addEventListener("click", removeBookMarkSlide);
+  box.appendChild(button);
+  sidebar.insertAdjacentElement("beforebegin", box);
+  RenderBookMarks();
 }
 
 function removeBookMarkSlide() {
@@ -416,4 +419,49 @@ function removeBookMarkSlide() {
   }
   logo(true);
   document.querySelector(".ytp-chrome-bottom").style.display = "block";
+  toggleSidebar("flex");
+}
+
+function ClearAllBookMarks() {
+  console.log("Clearing all bookmarks");
+  chrome.storage.local.clear(function () {
+    var error = chrome.runtime.lastError;
+    if (error) {
+      console.error(error);
+    }
+  });
+  chrome.storage.sync.clear();
+  document.querySelector("#Bookmarkedframes").remove();
+  RenderBookMarks();
+}
+
+function RenderBookMarks() {
+  const Bookmarkedframes = document.createElement("div");
+  Bookmarkedframes.className = "Bookmarkedframes";
+  Bookmarkedframes.id = "Bookmarkedframes";
+  box.appendChild(Bookmarkedframes);
+  chrome.storage.local.get({ bookmarks: [] }, function (result) {
+    if (result.bookmarks.length == 0) {
+      clearAll.style.display = "none";
+    } else {
+      result.bookmarks.forEach((bookmark, index) => {
+        const numberSlice = Math.abs(bookmark.time).toString(); // Use Math.abs() to handle negative numbers
+
+        // Return the first four characters of the string
+        const number = numberSlice.slice(0, 4);
+        console.log(number);
+
+        const image = document.createElement("div");
+        image.setAttribute("id", `BookmarkClearButton`);
+        image.setAttribute("data-id", `${index}`);
+        image.className = "image";
+        image.innerHTML = `
+              <div class="time">${number}</div>
+              <img src="${bookmark.thumbnail}" alt="nothing here" />
+            `;
+        Bookmarkedframes.appendChild(image);
+      });
+    }
+    document.querySelector("#box").appendChild(Bookmarkedframes);
+  });
 }
