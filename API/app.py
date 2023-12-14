@@ -14,8 +14,6 @@ import io
 
 
 from werkzeug.datastructures import FileStorage
-
-
 from ultralytics import YOLO
 import numpy as np
 import argparse

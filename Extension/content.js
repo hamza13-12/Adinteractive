@@ -1,5 +1,14 @@
 // content.js
 
+insertSidebar();
+insertSidebarStyles();
+// Insert the sidebar and its styles when the content script is loaded
+// Initially hide tVideoInDBhe sidebar
+toggleSidebar("none");
+// Start handling video playback events
+handleVideoPlayback();
+
+// ==========================Background Communication=============================
 // Function to send a message to the background script
 // The message contains the current video frame as a data URL
 function sendMessageToBackground(message) {
@@ -15,14 +24,10 @@ function sendMessageToBackground(message) {
   })();
 }
 
-// Function to fetch the extension state from storage
-// logo function takes the state of the extension as an argument
-// and changes the logo accordingly
-// if the state is true then the logo is colored
-// else the logo is gray
+VideoInDB = true;
+
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
   console.log(request.state);
-  logo(request.state);
   return true;
 });
 
@@ -48,8 +53,11 @@ async function captureFrame() {
       action: "processFrame",
       dataURL: frameDataURL,
     });
+    return frameDataURL;
   }
 }
+
+// ===========================Source Code improvision=====================================
 
 function displayAnnotations(data) {
   const video = document.querySelector("video");
@@ -102,38 +110,18 @@ function showSneakPeek(dot, link) {}
 //Refer to figma design for more details
 // Logo Function to insert the logo HTML into the page
 
-function logo(state) {
-  const sidebarParent = document.querySelector(".html5-video-container");
-  const logo = document.createElement("img");
-  if (state) {
-    logo.src = chrome.runtime.getURL("images/logo_128.png");
-  } else {
-    logo.src = chrome.runtime.getURL("images/graylogo_128.png");
-  }
-  logo.style.height = "70px";
-  logo.style.width = "70px";
-  logo.style.position = "absolute";
-  logo.style.top = "10px";
-  logo.style.right = "10px";
-
-  const button = document.createElement("button");
-  button.style.background = "transparent";
-  button.style.border = "none";
-  button.appendChild(logo);
-  sidebarParent.appendChild(button);
-}
-
 // Function to insert the sidebar HTML into the page
+
 function insertSidebar() {
   // Find the video container on the page
-  const sidebarParent = document.querySelector(".html5-video-container");
-
+  const sidebarParent = document.querySelector("#movie_player");
+  sidebarParent.style.position = "relative";
   // Create a div element for the sidebar
   const sidebarElement = document.createElement("div");
   sidebarElement.className = "sidebar";
   sidebarElement.innerHTML = `
       <div class="container-ext">
-        <button id="bookmarkButton" type="button">
+        <button id="bookmarkButton" type="button" onclick="">
           <img class="image-class" src="${chrome.runtime.getURL(
             "sidebar/bookmarks.png"
           )}" alt="">
@@ -145,23 +133,23 @@ function insertSidebar() {
           )}" alt="">
         </button>
 
-        <button id="setting">
+        <button id="settings-sidebar">
           <img class="image-class" src="${chrome.runtime.getURL(
             "sidebar/settings.png"
           )}" alt="">
         </button>
-
-
         <button id="setting">
           <img class="image-class image-opacity" src="${chrome.runtime.getURL(
             "images/patreon.png"
           )}" alt="">
         </button>
       </div>
+
+
   `;
 
   // Append the sidebar inside the video container
-  sidebarParent.appendChild(sidebarElement);
+  sidebarParent.insertBefore(sidebarElement, sidebarParent.firstChild);
 }
 
 // Function to insert the sidebar CSS into the page
@@ -169,6 +157,9 @@ function insertSidebarStyles() {
   const style = document.createElement("style");
   style.textContent = `
     @keyframes fadeIn {
+
+
+      
       0% {
         transform: translateX(-70px);
       }
@@ -185,10 +176,16 @@ function insertSidebarStyles() {
         transform: translateX(-70px);
     }}
 
+
+
+
     .sidebar{
       animation: fadeIn 0.5s;
-      position: relative;
+      position: absolute;
       top: 150px;
+      z-index: 1000;
+
+
     }
 
     .container-ext{
@@ -214,22 +211,80 @@ function insertSidebarStyles() {
     container-ext, button{
       background-color: transparent;
       border: none;
-      z-index: 1000;
+
     }
     container-ext, button:hover{
       cursor: pointer;
     }
+  .box {
+    position: absolute;
+    top: 14px;
+    right: 0px;
+    background-color: white;
+    opacity: 0.8;
+    z-index: 1001;
+
+
+  }
+
+.Bookmarkedframes {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow: scroll;
+  height:75vh;
+}
+
+.Bookmarkedframes img {
+  padding: 20px;
+  width: 200px;
+  height: 100px;
+  object-fit: cover;
+
+}
+
+.image{
+  position: relative;
+
+
+}
+.time {
+  font-size: 10px;
+  font-weight: bold;
+  position: absolute;
+  color: black;
+  bottom: 20px;
+  right: 10px;
+
+}
     `;
   document.head.appendChild(style);
 }
+function logo(state) {
+  const sidebarParent = document.querySelector("#movie_player");
+  sidebarParent.style.position = "relative";
+  const logo = document.createElement("img");
+  if (state) {
+    logo.src = chrome.runtime.getURL("images/logo_128.png");
+  } else {
+    logo.src = chrome.runtime.getURL("images/graylogo_128.png");
+  }
+  logo.style.height = "70px";
+  logo.style.width = "70px";
+  logo.style.position = "absolute";
+  logo.style.top = "10px";
+  logo.style.right = "10px";
 
-function insertBookmarkPanelStyles() {
-  const bookmarksStyle = document.createElement("style");
-  //Add bookmark panel styles here
-  bookmarksStyle.textContent = `
-  
-  `;
-  document.head.appendChild(bookmarksStyle);
+  const button = document.createElement("button");
+  button.style.background = "transparent";
+  button.style.border = "none";
+  button.appendChild(logo);
+  sidebarParent.insertBefore(button, sidebarParent.firstChild);
+}
+if (VideoInDB) {
+  logo(true);
+} else {
+  logo(false);
 }
 
 // Function to toggle the sidebar on and off
@@ -252,6 +307,9 @@ function handleVideoPlayback() {
     });
     video.addEventListener("play", () => {
       document.querySelector(".sidebar").style.animationName = "fadeOut";
+      if (document.querySelector(".box")) {
+        removeBookMarkSlide();
+      }
       //Function call to remove annotations
       removeAnnotations();
       setTimeout(() => {
@@ -260,21 +318,23 @@ function handleVideoPlayback() {
     });
   }
 
-  //Event listeners for bookmarks 
-  document.addEventListener('keydown', function(event) {
-    if (event.key === 'b' || event.key === 'B') {
+  //Event listeners for bookmarks
+  document.addEventListener("keydown", function (event) {
+    if (event.key === "b" || event.key === "B") {
       bookmarkCurrentFrame();
     }
   });
 
-  document.getElementById('bookmarkButton').addEventListener('click', bookmarkCurrentFrame);
+  document
+    .getElementById("bookmarkButton")
+    .addEventListener("click", bookmarkCurrentFrame);
 }
 
 function bookmarkCurrentFrame() {
   const video = document.querySelector("video");
   if (video) {
     const currentTime = video.currentTime; // Get current time for the bookmark
-    captureFrame().then(frameDataURL => {
+    captureFrame().then((frameDataURL) => {
       // Save the bookmark data, for now we'll log it to the console
       //console.log('Bookmark saved at:', currentTime, 'with thumbnail:', frameDataURL);
       saveBookmark({ time: currentTime, thumbnail: frameDataURL });
@@ -282,18 +342,17 @@ function bookmarkCurrentFrame() {
       // Update the UI with the new bookmark
       insertBookmarkPanelStyles();
       renderBookmarks();
-      
     });
   }
 }
 
 // Function to save a bookmark
 function saveBookmark(bookmark) {
-  chrome.storage.local.get({ bookmarks: [] }, function(result) {
+  chrome.storage.local.get({ bookmarks: [] }, function (result) {
     const bookmarks = result.bookmarks;
     bookmarks.push(bookmark);
-    chrome.storage.local.set({ bookmarks: bookmarks }, function() {
-      console.log('Bookmark saved.');
+    chrome.storage.local.set({ bookmarks: bookmarks }, function () {
+      console.log("Bookmark saved.");
     });
   });
 }
@@ -303,7 +362,7 @@ function renderBookmarks() {
   const bookmarksPanel = document.createElement("div");
   bookmarksPanel.className = "bookmarks-panel";
 
-  chrome.storage.local.get({ bookmarks: [] }, function(result) {
+  chrome.storage.local.get({ bookmarks: [] }, function (result) {
     result.bookmarks.forEach((bookmark, index) => {
       const bookmarkThumbnail = document.createElement("div");
       bookmarkThumbnail.className = "bookmark-thumbnail";
@@ -311,7 +370,7 @@ function renderBookmarks() {
       const thumbnailImage = document.createElement("img");
       thumbnailImage.src = bookmark.thumbnail;
       thumbnailImage.className = "thumbnail-image";
-      
+
       const timestamp = document.createElement("div");
       timestamp.className = "timestamp";
       timestamp.textContent = formatTime(bookmark.time);
@@ -319,24 +378,27 @@ function renderBookmarks() {
       const closeButton = document.createElement("button");
       closeButton.className = "close-button";
       closeButton.textContent = "X";
-      closeButton.onclick = function() {
+      closeButton.onclick = function () {
         // Remove this bookmark
         result.bookmarks.splice(index, 1);
-        chrome.storage.local.set({ bookmarks: result.bookmarks }, renderBookmarks);
+        chrome.storage.local.set(
+          { bookmarks: result.bookmarks },
+          renderBookmarks
+        );
       };
 
       bookmarkThumbnail.appendChild(thumbnailImage);
       bookmarkThumbnail.appendChild(timestamp);
       bookmarkThumbnail.appendChild(closeButton);
 
-      thumbnailImage.onclick = function() {
+      thumbnailImage.onclick = function () {
         document.querySelector("video").currentTime = bookmark.time;
       };
 
       bookmarksPanel.appendChild(bookmarkThumbnail);
     });
     // If a bookmarks panel already exists, remove it before appending the new one
-    const existingPanel = videoContainer.querySelector('.bookmarks-panel');
+    const existingPanel = videoContainer.querySelector(".bookmarks-panel");
     if (existingPanel) {
       existingPanel.remove();
     }
@@ -350,6 +412,8 @@ function formatTime(seconds) {
   return date.toISOString().substr(11, 8);
 }
 
+// ================= Remove All the improvisions =================
+
 function removeAnnotations() {
   const dots = document.querySelectorAll(".red-dot");
   dots.forEach((dot) => {
@@ -357,11 +421,92 @@ function removeAnnotations() {
   });
 }
 
-logo(false);
-// Insert the sidebar and its styles when the content script is loaded
-insertSidebarStyles();
-insertSidebar();
-// Initially hide the sidebar
-toggleSidebar("none");
-// Start handling video playback events
-handleVideoPlayback();
+// ================= Buttons Implementaion =================
+
+//Event listeners for bookmarks
+document.addEventListener("keydown", function (event) {
+  if (event.key === "b" || event.key === "B") {
+    bookmarkCurrentFrame();
+  }
+});
+document
+  .getElementById("bookmarkButton")
+  .addEventListener("click", bookmarkCurrentFrame);
+
+document
+  .getElementById("settings-sidebar")
+  .addEventListener("click", BookMarkSlide);
+
+function bookmarkCurrentFrame() {
+  const video = document.querySelector("video");
+  if (video) {
+    const currentTime = video.currentTime; // Get current time for the bookmark
+    captureFrame().then((frameDataURL) => {
+      console.log("Bookmark saved at:", currentTime, frameDataURL);
+      // Save the bookmark data, for now we'll log it to the console
+      //console.log('Bookmark saved at:', currentTime, 'with thumbnail:', frameDataURL);
+      saveBookmark({ time: currentTime, thumbnail: frameDataURL });
+
+      // Update the UI with the new bookmark
+      insertBookmarkPanelStyles();
+      renderBookmarks();
+    });
+  }
+}
+
+// Function to save a bookmark
+function saveBookmark(bookmark) {
+  chrome.storage.local.get({ bookmarks: [] }, function (result) {
+    const bookmarks = result.bookmarks;
+    bookmarks.push(bookmark);
+    chrome.storage.local.set({ bookmarks: bookmarks }, function () {
+      console.log("Bookmark saved.");
+    });
+  });
+}
+
+chrome.storage.local.get({ bookmarks: [] }, function (result) {
+  result.bookmarks.forEach((bookmark, index) => {
+    if (!bookmark.thumbnail) {
+      bookmarks.splice(index, 1);
+      console.log("removed bookmark", index);
+    }
+  });
+});
+
+function BookMarkSlide() {
+  toggleSidebar("none");
+  logo(false);
+  const sidebar = document.querySelector(".html5-video-container");
+  document.querySelector(".ytp-chrome-bottom").style.display = "none";
+  const box = document.createElement("div");
+  box.className = "box";
+  const Bookmarkedframes = document.createElement("div");
+  Bookmarkedframes.className = "Bookmarkedframes";
+
+  chrome.storage.local.get({ bookmarks: [] }, function (result) {
+    result.bookmarks.forEach((bookmark, index) => {
+      console.log(bookmark.thumbnail);
+
+      const image = document.createElement("div");
+      image.className = "image";
+      image.innerHTML = `
+              <div class="time">${bookmark.time}</div>
+              <img src="${bookmark.thumbnail}" alt="nothing here" />
+            `;
+      Bookmarkedframes.appendChild(image);
+    });
+    box.appendChild(Bookmarkedframes);
+    sidebar.insertAdjacentElement("beforebegin", box);
+  });
+}
+
+function removeBookMarkSlide() {
+  const box = document.querySelector(".box");
+  if (box) {
+    box.remove();
+  }
+  toggleSidebar("flex");
+  logo(true);
+  document.querySelector(".ytp-chrome-bottom").style.display = "block";
+}
