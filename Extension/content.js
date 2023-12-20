@@ -8,6 +8,21 @@ toggleSidebar("none");
 // Start handling video playback events
 handleVideoPlayback();
 
+var currentURL = document.URL;
+
+// You can now use 'currentURL' as needed, for example, log it to the console
+console.log("Current URL:", currentURL);
+
+function GetYoutubeVideoId(URL) {
+  var video_id = URL.split("v=")[1];
+  var ampersandPosition = video_id.indexOf("&");
+  if (ampersandPosition != -1) {
+    video_id = video_id.substring(0, ampersandPosition);
+  }
+  return video_id;
+}
+console.log(GetYoutubeVideoId(currentURL));
+
 // ==========================Background Communication=============================
 // Function to send a message to the background script
 // The message contains the current video frame as a data URL
@@ -275,6 +290,29 @@ function insertSidebarStyles() {
   color: black;
   display:block;
 }
+
+#ClearbookmarkButton{
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  cursor: pointer;
+  border: 1px solid black;
+  border-radius: 20px;
+  color: black;
+  display:block;
+  background-color: transparent;
+  border: none;
+  z-index: 1003;
+}
+#ClearbookmarkButton img{
+    width: 20px;
+  height: 20px;
+}
+.BookMarkButtonClasses{
+
+}
+
+
     `;
   document.head.appendChild(style);
 }
@@ -357,10 +395,15 @@ function bookmarkCurrentFrame() {
   if (video) {
     const currentTime = video.currentTime; // Get current time for the bookmark
     captureFrame().then((frameDataURL) => {
-      console.log("Bookmark saved at:", currentTime, frameDataURL);
       // Save the bookmark data, for now we'll log it to the console
       //console.log('Bookmark saved at:', currentTime, 'with thumbnail:', frameDataURL);
-      saveBookmark({ time: currentTime, thumbnail: frameDataURL });
+
+      const videoId = GetYoutubeVideoId(document.URL);
+      saveBookmark({
+        time: currentTime,
+        thumbnail: frameDataURL,
+        Id: videoId,
+      });
 
       // Update the UI with the new bookmark
     });
@@ -445,23 +488,67 @@ function RenderBookMarks() {
       clearAll.style.display = "none";
     } else {
       result.bookmarks.forEach((bookmark, index) => {
-        const numberSlice = Math.abs(bookmark.time).toString(); // Use Math.abs() to handle negative numbers
+        const videoID = GetYoutubeVideoId(document.URL);
+        if (bookmark.Id === videoID) {
+          const numberSlice = Math.abs(bookmark.time).toString();
+          // Use Math.abs() to handle negative numbers
 
-        // Return the first four characters of the string
-        const number = numberSlice.slice(0, 4);
-        console.log(number);
+          // Return the first four characters of the string
+          const number = numberSlice.slice(0, 4);
 
-        const image = document.createElement("div");
-        image.setAttribute("id", `BookmarkClearButton`);
-        image.setAttribute("data-id", `${index}`);
-        image.className = "image";
-        image.innerHTML = `
-              <div class="time">${number}</div>
-              <img src="${bookmark.thumbnail}" alt="nothing here" />
+          const image = document.createElement("div");
+          image.setAttribute("id", ``);
+          image.setAttribute("data-id", `${index}`);
+          image.className = "image";
+          image.innerHTML = `
+              <button id="ClearbookmarkButton" type="button" >
+                <img class="image-class" src="${chrome.runtime.getURL(
+                  "images/close.png"
+                )}"></button>
+              <div class="time">${bookmark.time}</div>
+              <button class='bookmarkTimeStampButton' id="${index}"> 
+              <img  src="${bookmark.thumbnail}" alt="nothing here" />
+              </button>
             `;
-        Bookmarkedframes.appendChild(image);
+          Bookmarkedframes.appendChild(image);
+        }
       });
     }
     document.querySelector("#box").appendChild(Bookmarkedframes);
+    BookMarkTimeStamp();
+  });
+}
+
+function RemoveSingleBookMark() {
+  document.querySelectorAll("#").forEach((button) => {
+    button.addEventListener("click", function () {
+      var buttonId = this.getAttribute("data-button-id");
+      // console.log("Button clicked: " + buttonId);
+      // Perform actions specific to the clicked button
+    });
+  });
+}
+
+function BookMarkTimeStamp() {
+  const Buttons = document.querySelectorAll(".bookmarkTimeStampButton");
+  for (var i = 0; i < Buttons.length; i++) {
+    console.log(Buttons[i].id);
+  }
+  console.log(Buttons);
+  Buttons.forEach((button) => {
+    button.addEventListener("click", function () {
+      chrome.storage.local.get({ bookmarks: [] }, function (result) {
+        result.bookmarks.forEach((bookmark, index) => {
+          if (index == button.id) {
+            var videoElement = document.querySelector("video");
+            videoElement.currentTime = bookmark.time;
+          }
+        });
+
+        console.log("idk if its working!");
+        captureFrame();
+        // Perform actions specific to the clicked button
+      });
+    });
   });
 }
