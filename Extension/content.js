@@ -8,11 +8,6 @@ toggleSidebar("none");
 // Start handling video playback events
 handleVideoPlayback();
 
-var currentURL = document.URL;
-
-// You can now use 'currentURL' as needed, for example, log it to the console
-console.log("Current URL:", currentURL);
-
 function GetYoutubeVideoId(URL) {
   var video_id = URL.split("v=")[1];
   var ampersandPosition = video_id.indexOf("&");
@@ -21,7 +16,6 @@ function GetYoutubeVideoId(URL) {
   }
   return video_id;
 }
-console.log(GetYoutubeVideoId(currentURL));
 
 // ==========================Background Communication=============================
 // Function to send a message to the background script
@@ -52,7 +46,6 @@ async function captureFrame() {
   const video = document.querySelector("video");
   if (video) {
     // Pause the video
-    video.pause();
 
     // Create a canvas to capture the current frame
     const canvas = document.createElement("canvas");
@@ -76,47 +69,46 @@ async function captureFrame() {
 
 function displayAnnotations(data) {
   const video = document.querySelector("video");
-  if (video) {
-    const videoContainer = document.querySelector(".html5-video-container");
-    // Log video dimensions
-    console.log("Video Dimensions:", video.offsetWidth, video.offsetHeight);
+  const videoContainer = document.querySelector("#movie_player");
+  // Log video dimensions
+  console.log("Video Dimensions:", video.offsetWidth, video.offsetHeight);
 
-    data.forEach((item) => {
-      // Log received coordinates
-      console.log("Received Coordinates:", item.coordinates);
+  data.forEach((item) => {
+    // Log received coordinates
+    console.log("Received Coordinates:", item.coordinates);
 
-      // Calculate dot positions
-      const dotX = item.coordinates[0] * video.offsetWidth;
-      const dotY = item.coordinates[1] * video.offsetHeight;
+    // Calculate dot positions
+    const dotX = item.coordinates[0] * video.offsetWidth;
+    const dotY = item.coordinates[1] * video.offsetHeight;
 
-      // Log calculated dot positions
-      console.log("Dot Position:", dotX, dotY);
+    // Log calculated dot positions
+    console.log("Dot Position:", dotX, dotY);
 
-      const dot = document.createElement("div");
-      dot.className = "red-dot";
-      dot.style.position = "absolute";
-      dot.style.left = `${dotX}px`;
-      dot.style.top = `${dotY}px`;
-      dot.style.width = "10px";
-      dot.style.height = "10px";
-      dot.style.backgroundColor = "red";
-      dot.style.borderRadius = "50%";
-      dot.style.cursor = "pointer";
+    const dot = document.createElement("div");
+    dot.className = "red-dot";
+    dot.style.position = "absolute";
+    dot.style.left = `${dotX}px`;
+    dot.style.top = `${dotY}px`;
+    dot.style.width = "10px";
+    dot.style.height = "10px";
+    dot.style.backgroundColor = "red";
+    dot.style.borderRadius = "50%";
+    dot.style.cursor = "pointer";
+    dot.style.zIndex = "1010";
 
-      // Event listener for hover
-      dot.addEventListener("mouseenter", () => {
-        // Show sneak peek of the product link
-        showSneakPeek(dot, item.link);
-      });
-
-      // Event listener for click
-      dot.addEventListener("click", () => {
-        window.open(item.link, "_blank"); // Open link in new tab
-      });
-
-      videoContainer.appendChild(dot);
+    // Event listener for hover
+    dot.addEventListener("mouseenter", () => {
+      // Show sneak peek of the product link
+      showSneakPeek(dot, item.link);
     });
-  }
+
+    // Event listener for click
+    dot.addEventListener("click", () => {
+      window.open(item.link, "_blank"); // Open link in new tab
+    });
+
+    videoContainer.insertBefore(dot, videoContainer.firstChild);
+  });
 }
 
 // ================= Remove All the improvisions =================
@@ -272,7 +264,7 @@ function insertSidebarStyles() {
   color: white;
   position: absolute;
   bottom: 9px;
-  right: 7px;
+  right: 12px;
 
 }
 .Bookmarkedframes::-webkit-scrollbar {
@@ -310,10 +302,7 @@ function insertSidebarStyles() {
 }
 .BookMarkButtonClasses{
 
-}
-
-
-    `;
+}`;
   document.head.appendChild(style);
 }
 function logo(state) {
@@ -337,6 +326,7 @@ function logo(state) {
   button.appendChild(logo);
   sidebarParent.insertBefore(button, sidebarParent.firstChild);
 }
+
 if (VideoInDB) {
   logo(true);
 } else {
@@ -420,6 +410,7 @@ function saveBookmark(bookmark) {
     });
   });
 }
+
 function BookMarkSlide() {
   toggleSidebar("none");
   logo(false);
@@ -505,7 +496,7 @@ function RenderBookMarks() {
                 <img class="image-class" src="${chrome.runtime.getURL(
                   "images/close.png"
                 )}"></button>
-              <div class="time">${bookmark.time}</div>
+              <div class="time">${SecondsToMinutes(bookmark.time)}</div>
               <button class='bookmarkTimeStampButton' id="${index}"> 
               <img  src="${bookmark.thumbnail}" alt="nothing here" />
               </button>
@@ -542,13 +533,24 @@ function BookMarkTimeStamp() {
           if (index == button.id) {
             var videoElement = document.querySelector("video");
             videoElement.currentTime = bookmark.time;
+            setTimeout(() => {
+              videoElement.play();
+            }, 1000);
+            captureFrame();
           }
         });
 
-        console.log("idk if its working!");
-        captureFrame();
         // Perform actions specific to the clicked button
       });
     });
   });
+}
+
+function SecondsToMinutes(time) {
+  var minutes = Math.floor(time / 60);
+  var seconds = Math.floor(time - minutes * 60);
+  if (seconds < 10) {
+    seconds = "0" + seconds;
+  }
+  return minutes + ":" + seconds;
 }
