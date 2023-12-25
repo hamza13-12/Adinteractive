@@ -70,6 +70,9 @@ async function captureFrame() {
 function displayAnnotations(data) {
   const video = document.querySelector("video");
   const videoContainer = document.querySelector("#movie_player");
+  const dots = document.createElement("div");
+  dots.className = "dot-class";
+
   // Log video dimensions
   console.log("Video Dimensions:", video.offsetWidth, video.offsetHeight);
 
@@ -107,14 +110,15 @@ function displayAnnotations(data) {
       window.open(item.link, "_blank"); // Open link in new tab
     });
 
-    videoContainer.insertBefore(dot, videoContainer.firstChild);
+    dots.appendChild(dot);
   });
+  videoContainer.insertBefore(dots, videoContainer.firstChild);
 }
 
 // ================= Remove All the improvisions =================
 
 function removeAnnotations() {
-  const dots = document.querySelectorAll(".red-dot");
+  const dots = document.querySelectorAll(".dot-class");
   dots.forEach((dot) => {
     dot.remove(); // Removes the dot from the DOM
   });
@@ -533,13 +537,10 @@ function BookMarkTimeStamp() {
           if (index == button.id) {
             var videoElement = document.querySelector("video");
             videoElement.currentTime = bookmark.time;
-            setTimeout(() => {
-              videoElement.play();
-            }, 1000);
-            captureFrame();
+            removeAnnotations();
+            setTimeout(captureFrame, 50);
           }
         });
-
         // Perform actions specific to the clicked button
       });
     });
