@@ -571,3 +571,12 @@ function SecondsToMinutes(time) {
   }
   return minutes + ":" + seconds;
 }
+
+function SecondsToMinutes(time) {
+  var minutes = Math.floor(time / 60);
+  var seconds = Math.floor(time - minutes * 60);
+  if (seconds < 10) {
+    seconds = "0" + seconds;
+  }
+  return minutes + ":" + seconds;
+}

@@ -2,7 +2,7 @@
 
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
   if (request.action === "processFrame") {
-    const apiUrl = "http://192.168.18.53:5000/"; // Flask API
+    const apiUrl = "http://192.168.10.2:5000/"; // Flask API
     const data = {
       frameData: request.dataURL,
       movieName: "granTurismo", // Hardcoded for now
