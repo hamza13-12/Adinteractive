@@ -110,10 +110,6 @@ def get_predictions(movie_name):
 
                     # print(xyxy)
 
-
-
-
-
             json_response.append({
                 "label":labels[object_name],
                 "description":descriptions[object_name],
@@ -140,8 +136,6 @@ def uploadFile():
         if movie_name != prevMovieName:
             load_model(movie_name)
 
-
-
         # Decode the base64-encoded frame data
         image_data = base64.b64decode(frame_data.split(',')[1])
 
@@ -154,9 +148,6 @@ def uploadFile():
         json_response = get_predictions(movie_name)
 
         time.sleep(0.5)
-
-
-
 
         response = jsonify(json_response)
 

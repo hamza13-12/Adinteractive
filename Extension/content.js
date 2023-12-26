@@ -8,11 +8,6 @@ toggleSidebar("none");
 // Start handling video playback events
 handleVideoPlayback();
 
-var currentURL = document.URL;
-
-// You can now use 'currentURL' as needed, for example, log it to the console
-console.log("Current URL:", currentURL);
-
 function GetYoutubeVideoId(URL) {
   var video_id = URL.split("v=")[1];
   var ampersandPosition = video_id.indexOf("&");
@@ -21,7 +16,6 @@ function GetYoutubeVideoId(URL) {
   }
   return video_id;
 }
-console.log(GetYoutubeVideoId(currentURL));
 
 // ==========================Background Communication=============================
 // Function to send a message to the background script
@@ -52,7 +46,6 @@ async function captureFrame() {
   const video = document.querySelector("video");
   if (video) {
     // Pause the video
-    video.pause();
 
     // Create a canvas to capture the current frame
     const canvas = document.createElement("canvas");
@@ -76,53 +69,56 @@ async function captureFrame() {
 
 function displayAnnotations(data) {
   const video = document.querySelector("video");
-  if (video) {
-    const videoContainer = document.querySelector(".html5-video-container");
-    // Log video dimensions
-    console.log("Video Dimensions:", video.offsetWidth, video.offsetHeight);
+  const videoContainer = document.querySelector("#movie_player");
+  const dots = document.createElement("div");
+  dots.className = "dot-class";
 
-    data.forEach((item) => {
-      // Log received coordinates
-      console.log("Received Coordinates:", item.coordinates);
+  // Log video dimensions
+  console.log("Video Dimensions:", video.offsetWidth, video.offsetHeight);
 
-      // Calculate dot positions
-      const dotX = item.coordinates[0] * video.offsetWidth;
-      const dotY = item.coordinates[1] * video.offsetHeight;
+  data.forEach((item) => {
+    // Log received coordinates
+    console.log("Received Coordinates:", item.coordinates);
 
-      // Log calculated dot positions
-      console.log("Dot Position:", dotX, dotY);
+    // Calculate dot positions
+    const dotX = item.coordinates[0] * video.offsetWidth;
+    const dotY = item.coordinates[1] * video.offsetHeight;
 
-      const dot = document.createElement("div");
-      dot.className = "red-dot";
-      dot.style.position = "absolute";
-      dot.style.left = `${dotX}px`;
-      dot.style.top = `${dotY}px`;
-      dot.style.width = "10px";
-      dot.style.height = "10px";
-      dot.style.backgroundColor = "red";
-      dot.style.borderRadius = "50%";
-      dot.style.cursor = "pointer";
+    // Log calculated dot positions
+    console.log("Dot Position:", dotX, dotY);
 
-      // Event listener for hover
-      dot.addEventListener("mouseenter", () => {
-        // Show sneak peek of the product link
-        showSneakPeek(dot, item.link);
-      });
+    const dot = document.createElement("div");
+    dot.className = "red-dot";
+    dot.style.position = "absolute";
+    dot.style.left = `${dotX}px`;
+    dot.style.top = `${dotY}px`;
+    dot.style.width = "10px";
+    dot.style.height = "10px";
+    dot.style.backgroundColor = "red";
+    dot.style.borderRadius = "50%";
+    dot.style.cursor = "pointer";
+    dot.style.zIndex = "1010";
 
-      // Event listener for click
-      dot.addEventListener("click", () => {
-        window.open(item.link, "_blank"); // Open link in new tab
-      });
-
-      videoContainer.appendChild(dot);
+    // Event listener for hover
+    dot.addEventListener("mouseenter", () => {
+      // Show sneak peek of the product link
+      showSneakPeek(dot, item.link);
     });
-  }
+
+    // Event listener for click
+    dot.addEventListener("click", () => {
+      window.open(item.link, "_blank"); // Open link in new tab
+    });
+
+    dots.appendChild(dot);
+  });
+  videoContainer.insertBefore(dots, videoContainer.firstChild);
 }
 
 // ================= Remove All the improvisions =================
 
 function removeAnnotations() {
-  const dots = document.querySelectorAll(".red-dot");
+  const dots = document.querySelectorAll(".dot-class");
   dots.forEach((dot) => {
     dot.remove(); // Removes the dot from the DOM
   });
@@ -168,9 +164,28 @@ function insertSidebar() {
         </button>
       </div>
   `;
-
+  
   // Append the sidebar inside the video container
-  sidebarParent.insertBefore(sidebarElement, sidebarParent.firstChild);
+  sidebarParent.appendChild(sidebarElement);
+
+  // Position the sidebar 
+  updateSidebarPosition();
+}
+
+function updateSidebarPosition() {
+  let videoElement = document.querySelector('.html5-main-video');
+  let sidebarElement = document.querySelector('.sidebar');
+  let parentElement = videoElement.closest('.html5-video-player');
+
+  if (videoElement && sidebarElement && parentElement) {
+    const videoMidpoint = parentElement.offsetHeight / 2;
+    const sidebarMidpoint = sidebarElement.offsetHeight / 2;
+
+    const newTop = videoMidpoint - sidebarMidpoint;
+    console.log("Calculated newTop for sidebar:", newTop);
+
+    sidebarElement.style.top = `${newTop}px`;
+  }
 }
 
 // Function to insert the sidebar CSS into the page
@@ -178,7 +193,6 @@ function insertSidebarStyles() {
   const style = document.createElement("style");
   style.textContent = `
     @keyframes fadeIn {
-      
       0% {
         transform: translateX(-70px);
       }
@@ -195,13 +209,10 @@ function insertSidebarStyles() {
         transform: translateX(-70px);
     }}
 
-
-
-
     .sidebar{
       animation: fadeIn 0.5s;
       position: absolute;
-      top: 150px;
+      transform: translateY(-50%);
       z-index: 1000;
     }
 
@@ -272,7 +283,7 @@ function insertSidebarStyles() {
   color: white;
   position: absolute;
   bottom: 9px;
-  right: 7px;
+  right: 12px;
 
 }
 .Bookmarkedframes::-webkit-scrollbar {
@@ -310,10 +321,7 @@ function insertSidebarStyles() {
 }
 .BookMarkButtonClasses{
 
-}
-
-
-    `;
+}`;
   document.head.appendChild(style);
 }
 function logo(state) {
@@ -337,6 +345,7 @@ function logo(state) {
   button.appendChild(logo);
   sidebarParent.insertBefore(button, sidebarParent.firstChild);
 }
+
 if (VideoInDB) {
   logo(true);
 } else {
@@ -357,6 +366,7 @@ function handleVideoPlayback() {
   const video = document.querySelector("video");
   if (video) {
     video.addEventListener("pause", () => {
+      updateSidebarPosition();
       toggleSidebar("flex");
       document.querySelector(".sidebar").style.animationName = "fadeIn";
       captureFrame();
@@ -420,6 +430,7 @@ function saveBookmark(bookmark) {
     });
   });
 }
+
 function BookMarkSlide() {
   toggleSidebar("none");
   logo(false);
@@ -505,7 +516,7 @@ function RenderBookMarks() {
                 <img class="image-class" src="${chrome.runtime.getURL(
                   "images/close.png"
                 )}"></button>
-              <div class="time">${bookmark.time}</div>
+              <div class="time">${SecondsToMinutes(bookmark.time)}</div>
               <button class='bookmarkTimeStampButton' id="${index}"> 
               <img  src="${bookmark.thumbnail}" alt="nothing here" />
               </button>
@@ -542,13 +553,21 @@ function BookMarkTimeStamp() {
           if (index == button.id) {
             var videoElement = document.querySelector("video");
             videoElement.currentTime = bookmark.time;
+            removeAnnotations();
+            setTimeout(captureFrame, 50);
           }
         });
-
-        console.log("idk if its working!");
-        captureFrame();
         // Perform actions specific to the clicked button
       });
     });
   });
+}
+
+function SecondsToMinutes(time) {
+  var minutes = Math.floor(time / 60);
+  var seconds = Math.floor(time - minutes * 60);
+  if (seconds < 10) {
+    seconds = "0" + seconds;
+  }
+  return minutes + ":" + seconds;
 }
