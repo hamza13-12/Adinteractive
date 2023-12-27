@@ -42,7 +42,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 
 // Function to capture the current video frame
 // and send it to the background script
-async function captureFrame() {
+async function captureFrame(bool) {
   const video = document.querySelector("video");
   if (video) {
     // Pause the video
@@ -57,11 +57,13 @@ async function captureFrame() {
     // Convert the frame to a data URL
     const frameDataURL = canvas.toDataURL("image/png");
     // Send the frame to the background script
-    sendMessageToBackground({
-      action: "processFrame",
-      dataURL: frameDataURL,
-    });
-    return frameDataURL;
+    if (bool) {
+      sendMessageToBackground({
+        action: "processFrame",
+        dataURL: frameDataURL,
+      });
+      return frameDataURL;
+    }
   }
 }
 
@@ -70,8 +72,6 @@ async function captureFrame() {
 function displayAnnotations(data) {
   const video = document.querySelector("video");
   const videoContainer = document.querySelector("#movie_player");
-  const dots = document.createElement("div");
-  dots.className = "dot-class";
 
   // Log video dimensions
   console.log("Video Dimensions:", video.offsetWidth, video.offsetHeight);
@@ -110,27 +110,77 @@ function displayAnnotations(data) {
       window.open(item.link, "_blank"); // Open link in new tab
     });
 
-    dots.appendChild(dot);
+    videoContainer.insertBefore(dot, videoContainer.firstChild);
   });
-  videoContainer.insertBefore(dots, videoContainer.firstChild);
 }
 
 // ================= Remove All the improvisions =================
 
 function removeAnnotations() {
-  const dots = document.querySelectorAll(".dot-class");
+  const items = document.querySelector("#movie_player");
+  const dots = items.querySelectorAll(".red-dot");
   dots.forEach((dot) => {
     dot.remove(); // Removes the dot from the DOM
   });
 }
 
-function showSneakPeek(dot, link) {}
-// Implement function to show sneak peek of the product link
-// This could be a tooltip or a small popup near the dot
-//Refer to figma design for more details
-// Logo Function to insert the logo HTML into the page
-// Function to insert the sidebar HTML into the page
+function showSneakPeek(dot, link) {
+  const apiKey = "55fb5b570b2b0c5333804062d4ab340f"; // Replace with your actual API key
+  const apiUrl = "https://api.linkpreview.net/";
 
+  const urlToPreview = link; // Replace with the URL you want to preview
+
+  // Build the API request URL
+  const apiRequestUrl = `${apiUrl}?key=${apiKey}&q=${encodeURIComponent(
+    urlToPreview
+  )}`;
+
+  // Make a request to the API
+  fetch(apiRequestUrl)
+    .then((response) => response.json())
+    .then((data) => {
+      // Process the link preview data
+      console.log("Link Preview Data:", data);
+      const sneakPeek = document.createElement("div");
+      sneakPeek.className = "sneak-peek";
+      sneakPeek.style.position = "absolute";
+      sneakPeek.style.left = `${dot.offsetLeft + dot.offsetWidth}px`;
+      sneakPeek.style.top = `${dot.offsetTop}px`;
+      sneakPeek.style.backgroundColor = "white";
+      sneakPeek.style.padding = "30px";
+      sneakPeek.style.borderRadius = "10px";
+      sneakPeek.style.boxShadow = "0px 0px 10px 0px rgba(0,0,0,0.75)";
+      sneakPeek.style.backgroundColor = "white";
+      sneakPeek.style.color = "black";
+      sneakPeek.style.opacity = "0.75";
+      sneakPeek.style.zIndex = "1010";
+      sneakPeek.style.cursor = "pointer";
+      sneakPeek.style.width = "300px";
+      sneakPeek.style.overflow = "hidden";
+      sneakPeek.style.display = "flex";
+      sneakPeek.style.flexDirection = "column";
+      sneakPeek.style.justifyContent = "space-between";
+      sneakPeek.style.alignItems = "center";
+      sneakPeek.style.gap = "10px";
+
+      sneakPeek.innerHTML = `
+       <div style="width:100px; height:100px; background-color:black;">
+        <img src="${data.image}" style="height:100%; width:100%; object-fit: cover;"/>
+       </div>
+        <div style="font-size: 14px; font-weight: bold; margin-top: 10px; color: black;">${data.title}</div>
+        <div style="font-size: 12px; color: black;">${data.description}</div>
+      `;
+      sneakPeek.addEventListener("mouseleave", () => {
+        sneakPeek.remove();
+      });
+
+      document.body.appendChild(sneakPeek);
+    })
+    .catch((error) => console.error("Error:", error));
+  console.log(dot);
+}
+
+// ==========================Sidebar Implementation=============================
 function insertSidebar() {
   // Find the video container on the page
   const sidebarParent = document.querySelector("#movie_player");
@@ -164,28 +214,11 @@ function insertSidebar() {
         </button>
       </div>
   `;
-  
+
   // Append the sidebar inside the video container
   sidebarParent.appendChild(sidebarElement);
 
-  // Position the sidebar 
-  updateSidebarPosition();
-}
-
-function updateSidebarPosition() {
-  let videoElement = document.querySelector('.html5-main-video');
-  let sidebarElement = document.querySelector('.sidebar');
-  let parentElement = videoElement.closest('.html5-video-player');
-
-  if (videoElement && sidebarElement && parentElement) {
-    const videoMidpoint = parentElement.offsetHeight / 2;
-    const sidebarMidpoint = sidebarElement.offsetHeight / 2;
-
-    const newTop = videoMidpoint - sidebarMidpoint;
-    console.log("Calculated newTop for sidebar:", newTop);
-
-    sidebarElement.style.top = `${newTop}px`;
-  }
+  // Position the sidebar
 }
 
 // Function to insert the sidebar CSS into the page
@@ -212,7 +245,7 @@ function insertSidebarStyles() {
     .sidebar{
       animation: fadeIn 0.5s;
       position: absolute;
-      transform: translateY(-50%);
+      top: 30%;
       z-index: 1000;
     }
 
@@ -366,10 +399,9 @@ function handleVideoPlayback() {
   const video = document.querySelector("video");
   if (video) {
     video.addEventListener("pause", () => {
-      updateSidebarPosition();
       toggleSidebar("flex");
       document.querySelector(".sidebar").style.animationName = "fadeIn";
-      captureFrame();
+      captureFrame(true);
     });
     video.addEventListener("play", () => {
       document.querySelector(".sidebar").style.animationName = "fadeOut";
@@ -404,7 +436,7 @@ function bookmarkCurrentFrame() {
   const video = document.querySelector("video");
   if (video) {
     const currentTime = video.currentTime; // Get current time for the bookmark
-    captureFrame().then((frameDataURL) => {
+    captureFrame(false).then((frameDataURL) => {
       // Save the bookmark data, for now we'll log it to the console
       //console.log('Bookmark saved at:', currentTime, 'with thumbnail:', frameDataURL);
 
@@ -554,22 +586,13 @@ function BookMarkTimeStamp() {
             var videoElement = document.querySelector("video");
             videoElement.currentTime = bookmark.time;
             removeAnnotations();
-            setTimeout(captureFrame, 50);
+            setTimeout(captureFrame(true), 200);
           }
         });
         // Perform actions specific to the clicked button
       });
     });
   });
-}
-
-function SecondsToMinutes(time) {
-  var minutes = Math.floor(time / 60);
-  var seconds = Math.floor(time - minutes * 60);
-  if (seconds < 10) {
-    seconds = "0" + seconds;
-  }
-  return minutes + ":" + seconds;
 }
 
 function SecondsToMinutes(time) {
