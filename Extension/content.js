@@ -62,8 +62,8 @@ async function captureFrame(bool) {
         action: "processFrame",
         dataURL: frameDataURL,
       });
-      return frameDataURL;
     }
+    return frameDataURL;
   }
 }
 
