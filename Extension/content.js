@@ -8,6 +8,72 @@ toggleSidebar("none");
 // Start handling video playback events
 handleVideoPlayback();
 
+// ==================================Settings Functionality========================================
+
+// Helper function to toggle visibility
+function toggleElementVisibility(element) {
+  element.style.display = element.style.display === 'none' ? 'block' : 'none';
+}
+
+// Initialize settings
+let userSettings = {
+  categories: []
+};
+
+// Save settings to local storage
+function saveSettings() {
+  chrome.storage.local.set({ userSettings }, function() {
+    console.log('Settings saved:', userSettings);
+  });
+}
+
+// Load settings from local storage
+function loadSettings(callback) {
+  chrome.storage.local.get(['userSettings'], function(result) {
+    if (result.userSettings) {
+      userSettings = result.userSettings;
+      console.log('Settings loaded:', userSettings);
+      if (typeof callback === 'function') callback();
+    }
+  });
+}
+
+// Apply user settings to filter annotations
+function applyUserSettingsToAnnotations(data) {
+  return data.filter(item => userSettings.categories.includes(item.label));
+}
+
+// Create Settings Panel
+function createSettingsPanel() {
+  const panel = document.createElement('div');
+  panel.id = 'settings-panel';
+  panel.style.display = 'none';
+  panel.innerHTML = `
+    <h3>Filter by Category:</h3>
+    <div id="settings-categories">
+      <label><input type="checkbox" value="Furniture"> Furniture </label>
+      <label><input type="checkbox" value="Electronics"> Electronics </label>
+      <label><input type="checkbox" value="Dress"> Dress </label>
+      <label><input type="checkbox" value="Food & Beverages"> Food & Beverages </label>
+      <label><input type="checkbox" value="Bags"> Household Items </label>
+      <label><input type="checkbox" value="Watches"> Watches </label>
+      <label><input type="checkbox" value="Sunglasses"> Sunglasses </label>
+    </div>
+    <button id="save-settings">Save</button>
+  `;
+  return panel;
+}
+
+// Handle checkbox changes
+function handleCategoryChange() {
+  const checkboxes = document.querySelectorAll('#settings-categories input[type="checkbox"]');
+  userSettings.categories = Array.from(checkboxes)
+    .filter(checkbox => checkbox.checked)
+    .map(checkbox => checkbox.value);
+  saveSettings();
+}
+
+
 function GetYoutubeVideoId(URL) {
   var video_id = URL.split("v=")[1];
   var ampersandPosition = video_id.indexOf("&");
@@ -25,6 +91,7 @@ function sendMessageToBackground(message) {
     const response = await chrome.runtime.sendMessage(message);
     console.log(response);
     if (response && response.data) {
+      console.log("Response from Frame API:", response)
       displayAnnotations(response.data);
     }
     // response is json from api
@@ -70,6 +137,7 @@ async function captureFrame(bool) {
 // ===========================Source Code improvision=====================================
 
 function displayAnnotations(data) {
+  data = applyUserSettingsToAnnotations(data);
   const video = document.querySelector("video");
   const videoContainer = document.querySelector("#movie_player");
 
@@ -218,7 +286,28 @@ function insertSidebar() {
   // Append the sidebar inside the video container
   sidebarParent.appendChild(sidebarElement);
 
-  // Position the sidebar
+  // Append settings panel to body
+  const settingsPanel = createSettingsPanel();
+  document.body.appendChild(settingsPanel);
+
+  // Event listener for settings button
+  document.getElementById('settings-sidebar').addEventListener('click', () => {
+    toggleElementVisibility(settingsPanel);
+  });
+
+  // Event listener for save button in settings panel
+  document.getElementById('save-settings').addEventListener('click', () => {
+    handleCategoryChange();
+    toggleElementVisibility(settingsPanel);
+  });
+
+  // Load settings and apply them to checkboxes
+  loadSettings(() => {
+    document.querySelectorAll('#settings-categories input[type="checkbox"]').forEach(checkbox => {
+      checkbox.checked = userSettings.categories.includes(checkbox.value);
+      checkbox.addEventListener('change', handleCategoryChange);
+    });
+  });
 }
 
 // Function to insert the sidebar CSS into the page
@@ -354,7 +443,40 @@ function insertSidebarStyles() {
 }
 .BookMarkButtonClasses{
 
-}`;
+}
+
+#settings-panel {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 300px;
+  background-color: #fff;
+  box-shadow: 0 0 5px rgba(0,0,0,0.2);
+  padding: 10px;
+  border-radius: 5px;
+  z-index: 1001; /* Ensure it's above other elements */
+}
+
+#settings-panel h3 {
+  margin-top: 0;
+}
+
+#settings-categories label {
+  display: block;
+  margin-bottom: 5px;
+}
+
+#settings-categories input[type='checkbox'] {
+  margin-right: 5px;
+}
+
+#save-settings {
+  display: inline-block;
+  margin-top: 10px;
+  cursor: pointer;
+}
+`;
   document.head.appendChild(style);
 }
 function logo(state) {
