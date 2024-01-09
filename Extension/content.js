@@ -1,53 +1,115 @@
 // content.js
 
-insertSidebar();
-insertSidebarStyles();
-// Insert the sidebar and its styles when the content script is loaded
-// Initially hide tVideoInDBhe sidebar
-toggleSidebar("none");
-// Start handling video playback events
-handleVideoPlayback();
+chrome.storage.local.get(["enabled"], function (result) {
+  const isEnabled = result.enabled || false;
+
+  if (isEnabled) {
+    const videoID = GetYoutubeVideoId(document.URL);
+    var DataBaseApi = "https://mhfateen.pythonanywhere.com/check/";
+    DataBaseApi = DataBaseApi + videoID;
+    console.log(DataBaseApi);
+    DataBaseApiCallback(DataBaseApi);
+  } else {
+    console.log("Extension is disabled.");
+  }
+});
+
+// Function to handle changes in the storage
+function handleStorageChanges(changes, namespace) {
+  for (let key in changes) {
+    console.log(key, changes[key]);
+    if (key === "enabled") {
+      const newEnabledValue = changes[key].newValue;
+      // Your logic to handle the change in isEnabled value
+      console.log("Extension state changed. New value:", newEnabledValue);
+      if (newEnabledValue) {
+        const videoID = GetYoutubeVideoId(document.URL);
+        var DataBaseApi = "https://mhfateen.pythonanywhere.com/check/";
+        DataBaseApi = DataBaseApi + videoID;
+        console.log(DataBaseApi);
+        DataBaseApiCallback(DataBaseApi);
+      } else {
+        removeAnnotations();
+        const sidebar = document.querySelector(".sidebar");
+        sidebar.remove();
+        document.querySelector(".sneak-peek").remove();
+        logo(false);
+      }
+    }
+  }
+}
+
+// Add an event listener for storage changes
+chrome.storage.onChanged.addListener(handleStorageChanges);
+
+// Your existing code that depends on the initial isEnabled value
+
+function DataBaseApiCallback(link) {
+  fetch(link)
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      return response.json(); // or response.text() if the response is not JSON
+    })
+    .then((data) => {
+      // Process the data returned by the API\
+      if (data.result == true) {
+        insertSidebar();
+        toggleSidebar("none");
+        handleVideoPlayback();
+        logo(true);
+        document
+          .getElementById("bookmarkButton")
+          .addEventListener("click", BookMarkSlide);
+      }
+      console.log("API response:", data);
+    })
+    .catch((error) => {
+      console.error("Error making API request:", error);
+    });
+}
 
 // ==================================Settings Functionality========================================
 
 // Helper function to toggle visibility
 function toggleElementVisibility(element) {
-  element.style.display = element.style.display === 'none' ? 'block' : 'none';
+  element.style.display = element.style.display === "none" ? "block" : "none";
 }
 
 // Initialize settings
 let userSettings = {
-  categories: []
+  categories: [],
 };
 
 // Save settings to local storage
 function saveSettings() {
-  chrome.storage.local.set({ userSettings }, function() {
-    console.log('Settings saved:', userSettings);
+  chrome.storage.local.set({ userSettings }, function () {
+    console.log("Settings saved:", userSettings);
   });
 }
 
 // Load settings from local storage
 function loadSettings(callback) {
-  chrome.storage.local.get(['userSettings'], function(result) {
+  chrome.storage.local.get(["userSettings"], function (result) {
     if (result.userSettings) {
       userSettings = result.userSettings;
-      console.log('Settings loaded:', userSettings);
-      if (typeof callback === 'function') callback();
+      console.log("Settings loaded:", userSettings);
+      if (typeof callback === "function") callback();
     }
   });
 }
 
 // Apply user settings to filter annotations
 function applyUserSettingsToAnnotations(data) {
-  return data.filter(item => userSettings.categories.includes(item.label));
+  return data.filter((item) => userSettings.categories.includes(item.label));
 }
 
 // Create Settings Panel
 function createSettingsPanel() {
-  const panel = document.createElement('div');
-  panel.id = 'settings-panel';
-  panel.style.display = 'none';
+  const panel = document.createElement("div");
+  panel.id = "settings-panel";
+  panel.style.display = "none";
   panel.innerHTML = `
     <h3>Filter by Category:</h3>
     <div id="settings-categories">
@@ -66,13 +128,14 @@ function createSettingsPanel() {
 
 // Handle checkbox changes
 function handleCategoryChange() {
-  const checkboxes = document.querySelectorAll('#settings-categories input[type="checkbox"]');
+  const checkboxes = document.querySelectorAll(
+    '#settings-categories input[type="checkbox"]'
+  );
   userSettings.categories = Array.from(checkboxes)
-    .filter(checkbox => checkbox.checked)
-    .map(checkbox => checkbox.value);
+    .filter((checkbox) => checkbox.checked)
+    .map((checkbox) => checkbox.value);
   saveSettings();
 }
-
 
 function GetYoutubeVideoId(URL) {
   var video_id = URL.split("v=")[1];
@@ -91,7 +154,7 @@ function sendMessageToBackground(message) {
     const response = await chrome.runtime.sendMessage(message);
     console.log(response);
     if (response && response.data) {
-      console.log("Response from Frame API:", response)
+      console.log("Response from Frame API:", response);
       displayAnnotations(response.data);
     }
     // response is json from api
@@ -109,29 +172,36 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 
 // Function to capture the current video frame
 // and send it to the background script
-async function captureFrame(bool) {
+async function captureFrame(bool, frame) {
   const video = document.querySelector("video");
-  if (video) {
-    // Pause the video
+  // Pause the video
+  // Create a canvas to capture the current frame
+  const canvas = document.createElement("canvas");
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  const ctx = canvas.getContext("2d");
+  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-    // Create a canvas to capture the current frame
-    const canvas = document.createElement("canvas");
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    const ctx = canvas.getContext("2d");
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-    // Convert the frame to a data URL
-    const frameDataURL = canvas.toDataURL("image/png");
-    // Send the frame to the background script
-    if (bool) {
+  // Convert the frame to a data URL
+  const frameDataURL = canvas.toDataURL("image/png");
+  console.log(frameDataURL);
+  // Send the frame to the background script
+  if (bool) {
+    console.log("Sending frame to background script...");
+    const videoId = GetYoutubeVideoId(document.URL);
+    if (frame) {
       sendMessageToBackground({
-        action: "processFrame",
+        action: videoId,
+        dataURL: frame,
+      });
+    } else {
+      sendMessageToBackground({
+        action: videoId,
         dataURL: frameDataURL,
       });
     }
-    return frameDataURL;
   }
+  return frameDataURL;
 }
 
 // ===========================Source Code improvision=====================================
@@ -165,7 +235,7 @@ function displayAnnotations(data) {
     dot.style.backgroundColor = "red";
     dot.style.borderRadius = "50%";
     dot.style.cursor = "pointer";
-    dot.style.zIndex = "1010";
+    dot.style.zIndex = "1015";
 
     // Event listener for hover
     dot.addEventListener("mouseenter", () => {
@@ -175,7 +245,8 @@ function displayAnnotations(data) {
 
     // Event listener for click
     dot.addEventListener("click", () => {
-      window.open(item.link, "_blank"); // Open link in new tab
+      window.open(item.link, "_blank");
+      // Open link in new tab
     });
 
     videoContainer.insertBefore(dot, videoContainer.firstChild);
@@ -212,8 +283,10 @@ function showSneakPeek(dot, link) {
       const sneakPeek = document.createElement("div");
       sneakPeek.className = "sneak-peek";
       sneakPeek.style.position = "absolute";
-      sneakPeek.style.left = `${dot.offsetLeft + dot.offsetWidth}px`;
+      sneakPeek.style.left = `${dot.offsetLeft}px`;
       sneakPeek.style.top = `${dot.offsetTop}px`;
+      console.log(dot.offsetLeft, dot.offsetWidth);
+      console.log(dot.offsetTop, dot.offsetHeight);
       sneakPeek.style.backgroundColor = "white";
       sneakPeek.style.padding = "30px";
       sneakPeek.style.borderRadius = "10px";
@@ -221,8 +294,6 @@ function showSneakPeek(dot, link) {
       sneakPeek.style.backgroundColor = "white";
       sneakPeek.style.color = "black";
       sneakPeek.style.opacity = "0.75";
-      sneakPeek.style.zIndex = "1010";
-      sneakPeek.style.cursor = "pointer";
       sneakPeek.style.width = "300px";
       sneakPeek.style.overflow = "hidden";
       sneakPeek.style.display = "flex";
@@ -241,7 +312,9 @@ function showSneakPeek(dot, link) {
       sneakPeek.addEventListener("mouseleave", () => {
         sneakPeek.remove();
       });
-
+      sneakPeek.addEventListener("click", () => {
+        window.open(link, "_blank");
+      });
       document.body.appendChild(sneakPeek);
     })
     .catch((error) => console.error("Error:", error));
@@ -291,194 +364,29 @@ function insertSidebar() {
   document.body.appendChild(settingsPanel);
 
   // Event listener for settings button
-  document.getElementById('settings-sidebar').addEventListener('click', () => {
+  document.getElementById("settings-sidebar").addEventListener("click", () => {
     toggleElementVisibility(settingsPanel);
   });
 
   // Event listener for save button in settings panel
-  document.getElementById('save-settings').addEventListener('click', () => {
+  document.getElementById("save-settings").addEventListener("click", () => {
     handleCategoryChange();
     toggleElementVisibility(settingsPanel);
   });
 
   // Load settings and apply them to checkboxes
   loadSettings(() => {
-    document.querySelectorAll('#settings-categories input[type="checkbox"]').forEach(checkbox => {
-      checkbox.checked = userSettings.categories.includes(checkbox.value);
-      checkbox.addEventListener('change', handleCategoryChange);
-    });
+    document
+      .querySelectorAll('#settings-categories input[type="checkbox"]')
+      .forEach((checkbox) => {
+        checkbox.checked = userSettings.categories.includes(checkbox.value);
+        checkbox.addEventListener("change", handleCategoryChange);
+      });
   });
 }
 
 // Function to insert the sidebar CSS into the page
-function insertSidebarStyles() {
-  const style = document.createElement("style");
-  style.textContent = `
-    @keyframes fadeIn {
-      0% {
-        transform: translateX(-70px);
-      }
-      100% {
 
-        transform: translateX(0px);
-    }}
-
-    @keyframes fadeOut {
-      0% {
-        transform: translateX(0px);
-      }
-      100% {
-        transform: translateX(-70px);
-    }}
-
-    .sidebar{
-      animation: fadeIn 0.5s;
-      position: absolute;
-      top: 30%;
-      z-index: 1000;
-    }
-
-    .container-ext{
-        width: 20px;
-        margin-left: 1rem;
-        background-color: #d6d6d6bf;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        gap: 30px;
-        align-items: center;
-        padding: 20px;
-        border-radius: 20px;
-    }
-    
-    .image-class{
-        height: 25px;
-        width: 25px;
-    }
-    .image-opacity{
-      opacity: 0.5;
-    }
-    container-ext, button{
-      background-color: transparent;
-      border: none;
-
-    }
-    container-ext, button:hover{
-      cursor: pointer;
-    }
-  .box {
-    position: absolute;
-    top: 14px;
-    right: 0px;
-    background-color: #d6d6d6bf;
-    z-index: 1001;
-    border-radius: 20px 0px 0px 20px;
-    width: 200px;
-    padding:25px;
-    height: 100vh;
-  }
-
-.Bookmarkedframes {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 20px;
-  overflow: scroll;
-  height:66vh;
-  margin-top: 34px;
-  padding: 20px;
-}
-
-.Bookmarkedframes img {
-  width: 200px;
-  height: 100px;
-}
-
-.image{
-  position: relative;
-
-
-}
-.time {
-  font-size: 15px;
-  font-weight: bold;
-  color: white;
-  position: absolute;
-  bottom: 9px;
-  right: 12px;
-
-}
-.Bookmarkedframes::-webkit-scrollbar {
-  display: none;
-}
-
-.clearAll{
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  cursor: pointer;
-  border: 1px solid black;
-  border-radius: 20px;
-  padding: 10px;
-  color: black;
-  display:block;
-}
-
-#ClearbookmarkButton{
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  cursor: pointer;
-  border: 1px solid black;
-  border-radius: 20px;
-  color: black;
-  display:block;
-  background-color: transparent;
-  border: none;
-  z-index: 1003;
-}
-#ClearbookmarkButton img{
-    width: 20px;
-  height: 20px;
-}
-.BookMarkButtonClasses{
-
-}
-
-#settings-panel {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  width: 300px;
-  background-color: #fff;
-  box-shadow: 0 0 5px rgba(0,0,0,0.2);
-  padding: 10px;
-  border-radius: 5px;
-  z-index: 1001; /* Ensure it's above other elements */
-}
-
-#settings-panel h3 {
-  margin-top: 0;
-}
-
-#settings-categories label {
-  display: block;
-  margin-bottom: 5px;
-}
-
-#settings-categories input[type='checkbox'] {
-  margin-right: 5px;
-}
-
-#save-settings {
-  display: inline-block;
-  margin-top: 10px;
-  cursor: pointer;
-}
-`;
-  document.head.appendChild(style);
-}
 function logo(state) {
   const sidebarParent = document.querySelector("#movie_player");
   sidebarParent.style.position = "relative";
@@ -501,12 +409,6 @@ function logo(state) {
   sidebarParent.insertBefore(button, sidebarParent.firstChild);
 }
 
-if (VideoInDB) {
-  logo(true);
-} else {
-  logo(false);
-}
-
 // Function to toggle the sidebar on and off
 function toggleSidebar(displayState) {
   const sidebar = document.querySelector(".sidebar");
@@ -523,7 +425,7 @@ function handleVideoPlayback() {
     video.addEventListener("pause", () => {
       toggleSidebar("flex");
       document.querySelector(".sidebar").style.animationName = "fadeIn";
-      captureFrame(true);
+      captureFrame(true, false);
     });
     video.addEventListener("play", () => {
       document.querySelector(".sidebar").style.animationName = "fadeOut";
@@ -543,6 +445,7 @@ function handleVideoPlayback() {
   //Event listeners for bookmarks
   document.addEventListener("keydown", function (event) {
     if (event.key === "b" || event.key === "B") {
+      console.log("Bookmarking current frame saving");
       bookmarkCurrentFrame();
     }
   });
@@ -550,15 +453,12 @@ function handleVideoPlayback() {
 // ================= Buttons Implementaion =================
 
 //Event listeners for bookmarks
-document
-  .getElementById("bookmarkButton")
-  .addEventListener("click", BookMarkSlide);
 
 function bookmarkCurrentFrame() {
   const video = document.querySelector("video");
   if (video) {
     const currentTime = video.currentTime; // Get current time for the bookmark
-    captureFrame(false).then((frameDataURL) => {
+    captureFrame(false, false).then((frameDataURL) => {
       // Save the bookmark data, for now we'll log it to the console
       //console.log('Bookmark saved at:', currentTime, 'with thumbnail:', frameDataURL);
 
@@ -617,6 +517,8 @@ function BookMarkSlide() {
   button.addEventListener("click", removeBookMarkSlide);
   box.appendChild(button);
   sidebar.insertAdjacentElement("beforebegin", box);
+
+  console.log("its done");
   RenderBookMarks();
 }
 
@@ -660,7 +562,6 @@ function RenderBookMarks() {
 
           // Return the first four characters of the string
           const number = numberSlice.slice(0, 4);
-
           const image = document.createElement("div");
           image.setAttribute("id", ``);
           image.setAttribute("data-id", `${index}`);
@@ -684,15 +585,22 @@ function RenderBookMarks() {
   });
 }
 
-function RemoveSingleBookMark() {
-  document.querySelectorAll("#").forEach((button) => {
-    button.addEventListener("click", function () {
-      var buttonId = this.getAttribute("data-button-id");
-      // console.log("Button clicked: " + buttonId);
-      // Perform actions specific to the clicked button
+document.querySelectorAll("#ClearbookmarkButton").forEach((button) => {
+  console.log(button);
+  button.addEventListener("click", function () {
+    console.log("Button clicked: " + button.id);
+    var buttonId = this.getAttribute("data-button-id");
+    console.log("Button clicked: " + buttonId);
+    chrome.storage.local.get({ bookmarks: [] }, function (result) {
+      const bookmarks = result.bookmarks;
+      bookmarks.splice(buttonId, 1);
+      chrome.storage.local.set({ bookmarks: bookmarks }, function () {
+        console.log("Bookmark saved.");
+        RenderBookMarks();
+      });
     });
   });
-}
+});
 
 function BookMarkTimeStamp() {
   const Buttons = document.querySelectorAll(".bookmarkTimeStampButton");
@@ -708,7 +616,7 @@ function BookMarkTimeStamp() {
             var videoElement = document.querySelector("video");
             videoElement.currentTime = bookmark.time;
             removeAnnotations();
-            setTimeout(captureFrame(true), 200);
+            captureFrame(true, bookmark.thumbnail);
           }
         });
         // Perform actions specific to the clicked button

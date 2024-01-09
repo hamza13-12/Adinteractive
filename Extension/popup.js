@@ -1,68 +1,37 @@
-// let element = document.getElementById("toggle");
-// if (element.innerHTML === "Enable") {
-//   chrome.storage.sync.set({ state: false }, function () {
-//     console.log("The state is set to false");
-//   });
-// } else {
-//   chrome.storage.sync.set({ state: true }, function () {
-//     console.log("The state is set to true");
-//   });
-// }
+// popup.js
+document.addEventListener("DOMContentLoaded", function () {
+  const toggleButton = document.getElementById("toggleButton");
 
-// document.getElementById("toggle").addEventListener("click", function () {
-//   if (element.innerHTML === "Enable") {
-//     document.getElementById("toggle").innerHTML = "Disable";
-//     chrome.storage.sync.set({ state: true }, function () {
-//       console.log("The state is set to true");
-//     });
-//   } else {
-//     document.getElementById("toggle").innerHTML = "Enable";
-//     chrome.storage.sync.set({ state: false }, function () {
-//       console.log("The state is set to false");
-//     });
-//   }
-//   getExtensionState(state);
-// });
-
-// function getExtensionState(extension) {
-//   (async () => {
-//     const [tab] = await chrome.tabs.query({
-//       active: true,
-//       lastFocusedWindow: true,
-//     });
-//     const response = await chrome.tabs.sendMessage(tab.id, {
-//       state: extension,
-//     });
-//     // do something with response here, not outside the function
-//     console.log(response);
-//   })();
-// }
-
-let extensionState = false;
-
-document.getElementById("toggle").addEventListener("click", function () {
-  extensionState = !extensionState;
-  if (extensionState) {
-    document.getElementById("toggle").innerHTML = "Disable";
-  } else {
-    document.getElementById("toggle").innerHTML = "Enable";
-  }
-  getExtensionState();
-  chrome.storage.sync.set({ state: extensionState }, function () {
-    console.log(extensionState);
+  // Retrieve extension state from storage
+  chrome.storage.local.get(["enabled"], function (result) {
+    const isEnabled = result.enabled || false;
+    updateToggleButton(isEnabled);
   });
-});
 
-function getExtensionState() {
-  (async () => {
-    const [tab] = await chrome.tabs.query({
-      active: true,
-      lastFocusedWindow: true,
+  // Toggle button click event
+  toggleButton.addEventListener("click", function () {
+    // Toggle extension state
+    chrome.storage.local.get(["enabled"], function (result) {
+      const isEnabled = result.enabled || false;
+      chrome.storage.local.set({ enabled: !isEnabled });
+      updateToggleButton(!isEnabled);
+      if (isEnabled) {
+        // Your extension functionality goes here
+        console.log("Extension is enabled.");
+      } else {
+        console.log("Extension is disabled.");
+      }
     });
-    const response = await chrome.tabs.sendMessage(tab.id, {
-      state: extensionState,
-    });
-    // do something with response here, not outside the function
-    console.log(response);
-  })();
-}
+  });
+
+  // Function to update the toggle button text and color
+  function updateToggleButton(isEnabled) {
+    toggleButton.textContent = isEnabled
+      ? "Disable Extension"
+      : "Enable Extension";
+    toggleButton.style.backgroundColor = isEnabled ? "red" : "green";
+  }
+});
+chrome.storage.local.get(["enabled"], function (result) {
+  const isEnabled = result.enabled || false;
+});

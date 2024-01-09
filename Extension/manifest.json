@@ -16,7 +16,8 @@
   "content_scripts": [
     {
       "matches": ["*://www.youtube.com/*"],
-      "js": ["content.js"]
+      "js": ["content.js"],
+      "css": ["content.css"]
     }
   ],
   "icons": {
@@ -37,5 +38,9 @@
       "matches": ["<all_urls>"]
     }
   ],
-  "host_permissions": ["file://*/*", "*://*/*", "*://mhfateen.pythonanywhere.com/*"]
+  "host_permissions": [
+    "file://*/*",
+    "*://*/*",
+    "*://mhfateen.pythonanywhere.com/*"
+  ]
 }

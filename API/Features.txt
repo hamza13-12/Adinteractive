@@ -19,3 +19,16 @@ B - Bookmark Thumbnail:
 
 Description: Users can press the 'B' key to bookmark a specific timestamp in the video. A thumbnail of the frame at that timestamp will be saved as a bookmark, allowing users to revisit and review specific moments in the video easily.
 Note: This feature provides a convenient way for users to save and revisit specific points of interest in the video content.
+
+
+
+categories
+
+Dress
+Backpack
+Electronics
+Furniture
+Car
+Tools
+Pillows
+Gym
