@@ -51,8 +51,8 @@ def load_model(movie_name):
     global model, classNames, descriptions, links, labels, images, prevMovieName
 
     
-
-    if movie_name == "granTurismo":
+    video_ids = ["GgKmhDaVo48", "granTurismo", "redNotice", "GVPzGBvPrzw"]
+    if movie_name in video_ids:
 
         with open("cfg/granTurismo.json") as json_data_file:
             data = json.load(json_data_file)
