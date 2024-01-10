@@ -207,7 +207,6 @@ async function captureFrame(bool, frame) {
 // ===========================Source Code improvision=====================================
 
 function displayAnnotations(data) {
-  data = applyUserSettingsToAnnotations(data);
   const video = document.querySelector("video");
   const videoContainer = document.querySelector("#movie_player");
 
