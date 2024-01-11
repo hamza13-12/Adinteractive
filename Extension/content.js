@@ -43,24 +43,50 @@ function applyUserSettingsToAnnotations(data) {
   return data.filter(item => userSettings.categories.includes(item.label));
 }
 
-// Create Settings Panel
-function createSettingsPanel() {
+async function getCategoriesFromBackgroundScript() {
+  try {
+    // Wrap chrome.runtime.sendMessage in a Promise
+    const response = await new Promise((resolve, reject) => {
+      chrome.runtime.sendMessage({ action: "getCategories" }, function (response) {
+        if (chrome.runtime.lastError) {
+          // Handle potential errors
+          reject(new Error(chrome.runtime.lastError.message));
+        } else {
+          // Resolve the promise with the response
+          resolve(response);
+        }
+      });
+    });
+
+    // Handle the response from the background script
+    console.log("Response from background script on categories:", response.categories);
+    return response.categories;
+  } catch (error) {
+    // Handle any errors that occur during the message sending
+    console.error("Error in getCategoriesFromBackgroundScript:", error);
+    return [];
+  }
+}
+
+function createSettingsPanel(categories) {
   const panel = document.createElement('div');
   panel.id = 'settings-panel';
   panel.style.display = 'none';
-  panel.innerHTML = `
-    <h3>Filter by Category:</h3>
-    <div id="settings-categories">
-      <label><input type="checkbox" value="Furniture"> Furniture </label>
-      <label><input type="checkbox" value="Electronics"> Electronics </label>
-      <label><input type="checkbox" value="Dress"> Dress </label>
-      <label><input type="checkbox" value="Food & Beverages"> Food & Beverages </label>
-      <label><input type="checkbox" value="Bags"> Household Items </label>
-      <label><input type="checkbox" value="Watches"> Watches </label>
-      <label><input type="checkbox" value="Sunglasses"> Sunglasses </label>
-    </div>
-    <button id="save-settings">Save</button>
-  `;
+
+  // Start the innerHTML with the header
+  let innerHTML = `<h3>Filter by Category:</h3><div id="settings-categories">`;
+
+  // Loop over the categories to create checkbox inputs
+  categories.forEach(category => {
+    innerHTML += `<label><input type="checkbox" value="${category}"> ${category} </label>`;
+  });
+
+  // Close the settings-categories div and add the save button
+  innerHTML += `</div><button id="save-settings">Save</button>`;
+
+  // Set the innerHTML of the panel
+  panel.innerHTML = innerHTML;
+
   return panel;
 }
 
@@ -71,6 +97,21 @@ function handleCategoryChange() {
     .filter(checkbox => checkbox.checked)
     .map(checkbox => checkbox.value);
   saveSettings();
+}
+
+function updatePanelPosition() {
+  const video = document.querySelector("video");
+  const panel = document.getElementById('settings-panel');
+
+  if (video && panel) {
+    const videoRect = video.getBoundingClientRect();
+    const panelWidth = panel.offsetWidth;
+    const panelHeight = panel.offsetHeight;
+
+    // Center the panel over the video
+    panel.style.left = `${videoRect.left + (videoRect.width / 2) - (panelWidth / 2)}px`;
+    panel.style.top = `${videoRect.top + (videoRect.height / 2) - (panelHeight / 2)}px`;
+  }
 }
 
 
@@ -286,27 +327,33 @@ function insertSidebar() {
   // Append the sidebar inside the video container
   sidebarParent.appendChild(sidebarElement);
 
-  // Append settings panel to body
-  const settingsPanel = createSettingsPanel();
-  document.body.appendChild(settingsPanel);
+  getCategoriesFromBackgroundScript().then(categories => {
+    const settingsPanel = createSettingsPanel(categories);
+    document.body.appendChild(settingsPanel);
 
-  // Event listener for settings button
-  document.getElementById('settings-sidebar').addEventListener('click', () => {
-    toggleElementVisibility(settingsPanel);
-  });
+    //updatePanelPosition();
 
-  // Event listener for save button in settings panel
-  document.getElementById('save-settings').addEventListener('click', () => {
-    handleCategoryChange();
-    toggleElementVisibility(settingsPanel);
-  });
+    //window.addEventListener('resize', updatePanelPosition);
 
-  // Load settings and apply them to checkboxes
-  loadSettings(() => {
-    document.querySelectorAll('#settings-categories input[type="checkbox"]').forEach(checkbox => {
-      checkbox.checked = userSettings.categories.includes(checkbox.value);
-      checkbox.addEventListener('change', handleCategoryChange);
+    loadSettings(() => {
+      document.querySelectorAll('#settings-categories input[type="checkbox"]').forEach(checkbox => {
+        checkbox.checked = userSettings.categories.includes(checkbox.value);
+        checkbox.addEventListener('change', handleCategoryChange);
+      });
     });
+
+    document.getElementById('settings-sidebar').addEventListener('click', () => {
+      updatePanelPosition();
+      toggleElementVisibility(settingsPanel);
+    });
+
+    document.getElementById('save-settings').addEventListener('click', () => {
+      handleCategoryChange();
+      toggleElementVisibility(settingsPanel);
+    });
+
+  }).catch(error => {
+    console.error("Could not create settings panel:", error);
   });
 }
 
@@ -460,6 +507,14 @@ function insertSidebarStyles() {
 
 #settings-panel h3 {
   margin-top: 0;
+}
+
+#settings-categories {
+  height: 150px; /* Fixed height for the scrollable area */
+  overflow-y: auto; /* Enables vertical scrollbar if content overflows */
+  padding-right: 5px; /* Optional: to ensure scrollbar doesn't overlap content */
+  border: 1px solid #ccc; /* Optional: to show the boundary of the scrollable area */
+  margin-bottom: 10px; /* Optional: to provide space below the scrollable area */
 }
 
 #settings-categories label {
