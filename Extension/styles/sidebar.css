@@ -1,0 +1,53 @@
+/* sidebar.css */ 
+
+@keyframes fadeIn {
+0% {
+    transform: translateX(-70px);
+}
+100% {
+    transform: translateX(0px);
+}}
+
+@keyframes fadeOut {
+0% {
+    transform: translateX(0px);
+}
+100% {
+    transform: translateX(-70px);
+}}
+
+.sidebar{
+    animation: fadeIn 0.5s;
+    position: absolute;
+    top: 30%;
+    z-index: 1000;
+}
+
+.container-ext{
+    width: 20px;
+    margin-left: 1rem;
+    background-color: #d6d6d6bf;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 30px;
+    align-items: center;
+    padding: 20px;
+    border-radius: 20px;
+}
+
+.image-class{
+    height: 25px;
+    width: 25px;
+}
+.image-opacity{
+opacity: 0.5;
+}
+container-ext, button{
+background-color: transparent;
+border: none;
+
+}
+container-ext, button:hover{
+cursor: pointer;
+}

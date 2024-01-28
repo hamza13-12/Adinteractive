@@ -16,7 +16,8 @@
   "content_scripts": [
     {
       "matches": ["*://www.youtube.com/*"],
-      "js": ["content.js"]
+      "js": ["JS/sidebar.js", "JS/settings.js", "JS/annotations.js", "content.js", "JS/bookmarks.js"], 
+      "css": ["styles/sidebar.css", "styles/bookmarks.css", "styles/settings.css"]
     }
   ],
   "icons": {
