@@ -4,6 +4,8 @@ function displayAnnotations(data) {
     data = applyUserSettingsToAnnotations(data);
     const video = document.querySelector("video");
     const videoContainer = document.querySelector("#movie_player");
+    var fullscreenButton = document.querySelector('.ytp-fullscreen-button');
+    var theatreButton = document.querySelector('.ytp-size-button');
 
     // Log video dimensions
     console.log("Video Dimensions:", video.offsetWidth, video.offsetHeight); //type -> number
@@ -53,9 +55,17 @@ function displayAnnotations(data) {
 
         videoContainer.insertBefore(dot, videoContainer.firstChild);
     });
-}
 
-// ================= Remove All the improvisions =================
+    fullscreenButton.addEventListener('click', function() {
+        console.log('Fullscreen button was pressed!');
+        removeAnnotations();
+    });
+
+    theatreButton.addEventListener('click', function() {
+        console.log('Theatre Mode button was pressed!');
+        removeAnnotations();
+    });
+}
 
 function removeAnnotations() {
     const items = document.querySelector("#movie_player");
