@@ -1,15 +1,16 @@
 /* annotations.js */
 
 function displayAnnotations(data) {
+    removeAnnotations();
     data = applyUserSettingsToAnnotations(data);
     const video = document.querySelector("video");
     const videoContainer = document.querySelector("#movie_player");
     var fullscreenButton = document.querySelector('.ytp-fullscreen-button');
     var theatreButton = document.querySelector('.ytp-size-button');
-
+    
     // Log video dimensions
     console.log("Video Dimensions:", video.offsetWidth, video.offsetHeight); //type -> number
-
+    
     data.forEach((item) => {
         // Log received coordinates
         console.log("Received Coordinates:", item.coordinates);

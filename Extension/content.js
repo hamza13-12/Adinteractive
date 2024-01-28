@@ -40,6 +40,7 @@ function sendMessageToBackground(message) {
     console.log(response);
     if (response && response.data) {
       console.log("Response from Frame API:", response)
+      //removeAnnotations();
       displayAnnotations(response.data);
     }
     // response is json from api
@@ -118,6 +119,7 @@ getCategoriesFromBackgroundScript().then(categories => {
   console.error("Could not create settings panel:", error);
 });
 
+//--------------------------Handle Video Playback Events------------------------------
 
 // Function to handle video play and pause events
 function handleVideoPlayback() {
@@ -138,6 +140,13 @@ function handleVideoPlayback() {
       setTimeout(() => {
         toggleSidebar("none");
       }, 500);
+    });
+
+    video.addEventListener("seeked", () => {
+      if (video.paused) {
+        removeAnnotations();
+        captureFrame(true);
+      }
     });
   }
 }
