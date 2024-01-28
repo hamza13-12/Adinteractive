@@ -6,15 +6,24 @@ function displayAnnotations(data) {
     const videoContainer = document.querySelector("#movie_player");
 
     // Log video dimensions
-    console.log("Video Dimensions:", video.offsetWidth, video.offsetHeight);
+    console.log("Video Dimensions:", video.offsetWidth, video.offsetHeight); //type -> number
 
     data.forEach((item) => {
         // Log received coordinates
         console.log("Received Coordinates:", item.coordinates);
 
-        // Calculate dot positions
-        const dotX = item.coordinates[0] * video.offsetWidth;
-        const dotY = item.coordinates[1] * video.offsetHeight;
+        let dotX, dotY;
+
+        if (video.offsetWidth === 935 && video.offsetHeight === 526) {
+            //Special case of theatre mode
+            dotX = item.coordinates[0] * video.offsetWidth + 295; //295 is difference between theatre mode with and default mode width
+            dotY = item.coordinates[1] * video.offsetHeight;
+        }
+        else {
+            // Calculate dot positions
+            dotX = item.coordinates[0] * video.offsetWidth;
+            dotY = item.coordinates[1] * video.offsetHeight;
+        }
 
         // Log calculated dot positions
         console.log("Dot Position:", dotX, dotY);
