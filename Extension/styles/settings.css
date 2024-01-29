@@ -1,0 +1,41 @@
+/* settings.css */
+
+#settings-panel {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 300px;
+  background-color: #fff;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+  padding: 10px;
+  border-radius: 5px;
+  z-index: 1001; /* Ensure it's above other elements */
+}
+
+#settings-panel h3 {
+  margin-top: 0;
+}
+
+#settings-categories {
+  height: 150px; /* Fixed height for the scrollable area */
+  overflow-y: auto; /* Enables vertical scrollbar if content overflows */
+  padding-right: 5px; /* Optional: to ensure scrollbar doesn't overlap content */
+  border: 1px solid #ccc; /* Optional: to show the boundary of the scrollable area */
+  margin-bottom: 10px; /* Optional: to provide space below the scrollable area */
+}
+
+#settings-categories label {
+  display: block;
+  margin-bottom: 5px;
+}
+
+#settings-categories input[type="checkbox"] {
+  margin-right: 5px;
+}
+
+#save-settings {
+  display: inline-block;
+  margin-top: 10px;
+  cursor: pointer;
+}
