@@ -1,81 +1,48 @@
-/* settings.js */
+/* sidebar.js */
 
-// Initialize settings
-let userSettings = {
-  categories: [],
-};
+function insertSidebar() {
+  // Find the video container on the page
+  const sidebarParent = document.querySelector("#movie_player");
+  sidebarParent.style.position = "relative";
+  // Create a div element for the sidebar
+  const sidebarElement = document.createElement("div");
+  sidebarElement.className = "sidebar";
+  sidebarElement.innerHTML = `
+        <div class="container-ext">
+          <button id="bookmarkButton" type="button" onclick="">
+            <img class="image-class" src="${chrome.runtime.getURL(
+              "sidebar/bookmarks.png"
+            )}" alt="">
+          </button>
+  
+          <button id="help-circle">
+            <img class="image-class" src="${chrome.runtime.getURL(
+              "sidebar/help-circle.png"
+            )}" alt="">
+          </button>
+  
+          <button id="settings-sidebar">
+            <img class="image-class" src="${chrome.runtime.getURL(
+              "sidebar/settings.png"
+            )}" alt="">
+          </button>
+          <button id="setting">
+            <img class="image-class image-opacity" src="${chrome.runtime.getURL(
+              "images/patreon.png"
+            )}" alt="">
+          </button>
+        </div>
+    `;
 
-// Save settings to local storage
-function saveSettings() {
-  chrome.storage.local.set({ userSettings }, function () {
-    console.log("Settings saved:", userSettings);
-  });
+  // Append the sidebar inside the video container
+  sidebarParent.appendChild(sidebarElement);
 }
 
-// Load settings from local storage
-function loadSettings(callback) {
-  chrome.storage.local.get(["userSettings"], function (result) {
-    if (result.userSettings) {
-      userSettings = result.userSettings;
-      console.log("Settings loaded:", userSettings);
-      if (typeof callback === "function") callback();
-    }
-  });
-}
-
-// Apply user settings to filter annotations
-function applyUserSettingsToAnnotations(data) {
-  return data.filter((item) => userSettings.categories.includes(item.label));
-}
-
-// Handle checkbox changes
-function handleCategoryChange() {
-  const checkboxes = document.querySelectorAll(
-    '#settings-categories input[type="checkbox"]'
-  );
-  userSettings.categories = Array.from(checkboxes)
-    .filter((checkbox) => checkbox.checked)
-    .map((checkbox) => checkbox.value);
-  saveSettings();
-}
-
-function updatePanelPosition() {
-  const video = document.querySelector("video");
-  const panel = document.getElementById("settings-panel");
-
-  if (video && panel) {
-    const videoRect = video.getBoundingClientRect();
-    const panelWidth = panel.offsetWidth;
-    const panelHeight = panel.offsetHeight;
-
-    // Center the panel over the video
-    panel.style.left = `${
-      videoRect.left + videoRect.width / 2 - panelWidth / 2
-    }px`;
-    panel.style.top = `${
-      videoRect.top + videoRect.height / 2 - panelHeight / 2
-    }px`;
+// Function to toggle the sidebar on and off
+function toggleSidebar(displayState) {
+  const sidebar = document.querySelector(".sidebar");
+  const widget = document.querySelector(".container-ext");
+  if (sidebar) {
+    sidebar.style.display = displayState;
   }
-}
-
-function createSettingsPanel(categories) {
-  const panel = document.createElement("div");
-  panel.id = "settings-panel";
-  panel.style.display = "none";
-
-  // Start the innerHTML with the header
-  let innerHTML = `<h3>Filter by Category:</h3><div id="settings-categories">`;
-
-  // Loop over the categories to create checkbox inputs
-  categories.forEach((category) => {
-    innerHTML += `<label><input type="checkbox" value="${category}"> ${category} </label>`;
-  });
-
-  // Close the settings-categories div and add the save button
-  innerHTML += `</div><button id="save-settings">Save</button>`;
-
-  // Set the innerHTML of the panel
-  panel.innerHTML = innerHTML;
-
-  return panel;
 }
