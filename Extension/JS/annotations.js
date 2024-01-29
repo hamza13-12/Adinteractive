@@ -1,6 +1,7 @@
 /* annotations.js */
 
 function displayAnnotations(data) {
+  removeAnnotations();
   data = applyUserSettingsToAnnotations(data);
   const video = document.querySelector("video");
   const videoContainer = document.querySelector("#movie_player");
@@ -14,9 +15,17 @@ function displayAnnotations(data) {
     // Log received coordinates
     console.log("Received Coordinates:", item.coordinates);
 
-    // Calculate dot positions
-    const dotX = item.coordinates[0] * video.offsetWidth;
-    const dotY = item.coordinates[1] * video.offsetHeight;
+    let dotX, dotY;
+
+    if (video.offsetWidth === 935 && video.offsetHeight === 526) {
+      //Special case of theatre mode
+      dotX = item.coordinates[0] * video.offsetWidth + 295; //295 is difference between theatre mode with and default mode width
+      dotY = item.coordinates[1] * video.offsetHeight;
+    } else {
+      // Calculate dot positions
+      dotX = item.coordinates[0] * video.offsetWidth;
+      dotY = item.coordinates[1] * video.offsetHeight;
+    }
 
     // Log calculated dot positions
     console.log("Dot Position:", dotX, dotY);
@@ -46,9 +55,17 @@ function displayAnnotations(data) {
 
     videoContainer.insertBefore(dot, videoContainer.firstChild);
   });
-}
 
-// ================= Remove All the improvisions =================
+  fullscreenButton.addEventListener("click", function () {
+    console.log("Fullscreen button was pressed!");
+    removeAnnotations();
+  });
+
+  theatreButton.addEventListener("click", function () {
+    console.log("Theatre Mode button was pressed!");
+    removeAnnotations();
+  });
+}
 
 function removeAnnotations() {
   const items = document.querySelector("#movie_player");
