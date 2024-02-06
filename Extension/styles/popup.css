@@ -1,16 +1,14 @@
-body {
-    width: 200px;
-    padding: 10px;
-    font-family: "Segoe UI", sans-serif;
-  }
-  
-  h1 {
-    color: #333;
-    font-size: 16px;
-  }
-  
-  button {
-    padding: 5px 15px;
-    margin: 10px 0;
-  }
-  
+#toggleButton {
+  cursor: pointer;
+  color: white;
+  background-color: #2196f3;
+  border-radius: 20px;
+  padding: 10px;
+  border: none;
+  display: block;
+  margin: 0 auto;
+  width: 100px;
+  text-align: center;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}

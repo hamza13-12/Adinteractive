@@ -8,9 +8,6 @@ document.addEventListener("keydown", function (event) {
 });
 
 //Event listeners for bookmarks
-document
-  .getElementById("bookmarkButton")
-  .addEventListener("click", BookMarkSlide);
 
 function bookmarkCurrentFrame() {
   const video = document.querySelector("video");
@@ -52,7 +49,7 @@ function BookMarkSlide() {
   box.id = "box";
 
   const close = document.createElement("img");
-  close.src = chrome.runtime.getURL("images/close.png");
+  close.src = chrome.runtime.getURL("images/BlackClose.png");
   close.style.height = "20px";
   close.style.width = "20px";
   close.style.position = "absolute";
@@ -100,9 +97,20 @@ function ClearAllBookMarks() {
 }
 
 function RenderBookMarks() {
-  const Bookmarkedframes = document.createElement("div");
+  const box = document.getElementById("box");
+  const Bookmarkedframes =
+    document.getElementById("Bookmarkedframes") ||
+    document.createElement("div");
+  Bookmarkedframes.innerHTML = ""; // Clear any existing bookmarks
   Bookmarkedframes.className = "Bookmarkedframes";
   Bookmarkedframes.id = "Bookmarkedframes";
+
+  // Ensure the box is present
+  if (!box) {
+    console.error("Box element not found");
+    return;
+  }
+
   box.appendChild(Bookmarkedframes);
   chrome.storage.local.get({ bookmarks: [] }, function (result) {
     if (result.bookmarks.length == 0) {
@@ -120,11 +128,12 @@ function RenderBookMarks() {
           const image = document.createElement("div");
           image.setAttribute("id", ``);
           image.setAttribute("data-id", `${index}`);
+          image.id = "singleimage";
           image.className = "image";
           image.innerHTML = `
-              <button id="ClearbookmarkButton" type="button" >
+              <button class="ClearbookmarkButton" id=${index} type="button" >
                 <img class="image-class" src="${chrome.runtime.getURL(
-                  "images/close.png"
+                  "images/WhiteClose.png"
                 )}"></button>
               <div class="time">${SecondsToMinutes(bookmark.time)}</div>
               <button class='bookmarkTimeStampButton' id="${index}"> 
@@ -136,26 +145,30 @@ function RenderBookMarks() {
       });
     }
     document.querySelector("#box").appendChild(Bookmarkedframes);
+    RemoveSingleBookMark();
     BookMarkTimeStamp();
   });
 }
 
 function RemoveSingleBookMark() {
-  document.querySelectorAll("#").forEach((button) => {
+  document.querySelectorAll(".ClearbookmarkButton").forEach((button) => {
     button.addEventListener("click", function () {
-      var buttonId = this.getAttribute("data-button-id");
-      // console.log("Button clicked: " + buttonId);
-      // Perform actions specific to the clicked button
+      var buttonId = parseInt(this.id, 10); // Assuming this id is the index of the bookmark
+      chrome.storage.local.get({ bookmarks: [] }, function (result) {
+        var newBookmarks = result.bookmarks.filter(
+          (_, index) => index !== buttonId
+        );
+        chrome.storage.local.set({ bookmarks: newBookmarks }, function () {
+          console.log("Bookmark removed.");
+          RenderBookMarks(); // Re-render bookmarks after removal
+        });
+      });
     });
   });
 }
 
 function BookMarkTimeStamp() {
   const Buttons = document.querySelectorAll(".bookmarkTimeStampButton");
-  for (var i = 0; i < Buttons.length; i++) {
-    console.log(Buttons[i].id);
-  }
-  console.log(Buttons);
   Buttons.forEach((button) => {
     button.addEventListener("click", function () {
       chrome.storage.local.get({ bookmarks: [] }, function (result) {

@@ -30,11 +30,55 @@ function checkAndExecute() {
         document
           .getElementById("bookmarkButton")
           .addEventListener("click", BookMarkSlide);
+        getCategoriesFromBackgroundScript()
+          .then((categories) => {
+            const settingsPanel = createSettingsPanel(categories); // This function should return the created settings panel element
+            document.body.appendChild(settingsPanel);
+
+            loadSettings(() => {
+              document
+                .querySelectorAll('#settings-categories input[type="checkbox"]')
+                .forEach((checkbox) => {
+                  checkbox.checked = userSettings.categories.includes(
+                    checkbox.value
+                  );
+                  checkbox.addEventListener("change", handleCategoryChange);
+                });
+            });
+
+            // Now that the settingsPanel is confirmed to be in the DOM, we can safely add the event listener
+            document
+              .getElementById("settings-sidebar")
+              .addEventListener("click", () => {
+                updatePanelPosition();
+                toggleElementVisibility(settingsPanel);
+              });
+
+            document
+              .getElementById("save-settings")
+              .addEventListener("click", () => {
+                handleCategoryChange();
+                toggleElementVisibility(settingsPanel);
+              });
+
+            // Save settings event listener
+
+            // Here you can also safely add any other event listeners related to the sidebar
+          })
+          .catch((error) => {
+            console.error("Could not create settings panel:", error);
+          });
       } else {
         console.log("Extension is disabled or video not in database.");
         removeAnnotations();
-        document.querySelector(".sidebar").remove();
-        document.querySelector(".sneak-peek").remove();
+        if (
+          document.querySelector(".sidebar") ||
+          document.querySelector(".sneak-peek")
+        ) {
+          document.querySelector(".sidebar").remove();
+          document.querySelector(".sneak-peek").remove();
+        }
+
         // Add logic here if you need to handle the disabled state or video not in database
       }
     });
@@ -77,7 +121,7 @@ function DataBaseApiCallback(link, callback) {
     });
 }
 
-// ==================================Communication with Background Script========================================
+// ===============================Communication with Background Script========================================
 
 async function getCategoriesFromBackgroundScript() {
   try {
@@ -169,37 +213,11 @@ function GetYoutubeVideoId(URL) {
 }
 
 //-----------------------------Create Settings Panel------------------------------------
+// ... (rest of your code)
 
-getCategoriesFromBackgroundScript()
-  .then((categories) => {
-    const settingsPanel = createSettingsPanel(categories);
-    document.body.appendChild(settingsPanel);
+// Fetch categories and then build and append the settings panel
 
-    loadSettings(() => {
-      document
-        .querySelectorAll('#settings-categories input[type="checkbox"]')
-        .forEach((checkbox) => {
-          checkbox.checked = userSettings.categories.includes(checkbox.value);
-          checkbox.addEventListener("change", handleCategoryChange);
-        });
-    });
-
-    document
-      .getElementById("settings-sidebar")
-      .addEventListener("click", () => {
-        updatePanelPosition();
-        toggleElementVisibility(settingsPanel);
-      });
-
-    document.getElementById("save-settings").addEventListener("click", () => {
-      handleCategoryChange();
-      toggleElementVisibility(settingsPanel);
-    });
-  })
-  .catch((error) => {
-    console.error("Could not create settings panel:", error);
-  });
-
+// ... (rest of your code)
 //--------------------------Handle Video Playback Events------------------------------
 
 // Function to handle video play and pause events

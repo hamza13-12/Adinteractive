@@ -26,7 +26,8 @@
       "css": [
         "styles/sidebar.css",
         "styles/bookmarks.css",
-        "styles/settings.css"
+        "styles/settings.css",
+        "styles/popup.css"
       ]
     }
   ],
@@ -43,7 +44,8 @@
         "images/graylogo_128.png",
         "images/patreon.png",
         "sidebar/image5.png",
-        "images/close.png"
+        "images/WhiteClose.png",
+        "images/BlackClose.png"
       ],
       "matches": ["<all_urls>"]
     }
