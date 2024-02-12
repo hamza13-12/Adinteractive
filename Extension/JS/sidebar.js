@@ -46,3 +46,23 @@ function toggleSidebar(displayState) {
     sidebar.style.display = displayState;
   }
 }
+function logo() {
+  const sidebarParent = document.querySelector("#movie_player");
+  sidebarParent.style.position = "relative";
+
+  const logo = document.createElement("img");
+  logo.setAttribute("id", "Adinteractive-logo");
+  logo.style.height = "70px";
+  logo.style.width = "70px";
+  logo.style.position = "absolute";
+  logo.style.top = "10px";
+  logo.style.right = "10px";
+  logo.style.zIndex = "1015";
+  logo.border = "none";
+  const div = document.createElement("div");
+
+  div.border = "none";
+  div.appendChild(logo);
+
+  sidebarParent.appendChild(div);
+}

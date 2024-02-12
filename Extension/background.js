@@ -7,8 +7,9 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
       frameData: request.dataURL,
       movieName: request.action, // Hardcoded for now
     };
+    console.log(data);
     // Log the JSON request
-
+    console.log(data);
     fetch(apiUrl, {
       method: "POST",
       headers: {

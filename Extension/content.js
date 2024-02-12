@@ -1,4 +1,5 @@
 // content.js
+
 let lastUrl = document.URL;
 new MutationObserver(() => {
   const url = document.URL;
@@ -18,9 +19,18 @@ function checkAndExecute() {
   var DataBaseApi = "https://mhfateen.pythonanywhere.com/check/" + videoID;
   DataBaseApiCallback(DataBaseApi, (isInDatabase, data) => {
     console.log("Video in database:", isInDatabase);
+
     // Assuming DataBaseApiCallback is async and uses a callback
     chrome.storage.local.get(["enabled"], function (result) {
       const isEnabled = result.enabled || false;
+      logo();
+      if (isInDatabase === true) {
+        document.querySelector("#Adinteractive-logo").src =
+          chrome.runtime.getURL("images/logo_128.png");
+      } else {
+        document.querySelector("#Adinteractive-logo").src =
+          chrome.runtime.getURL("images/graylogo_128.png");
+      }
 
       if (isEnabled && isInDatabase) {
         // Check if both conditions are met
@@ -71,11 +81,10 @@ function checkAndExecute() {
       } else {
         console.log("Extension is disabled or video not in database.");
         removeAnnotations();
-        if (
-          document.querySelector(".sidebar") ||
-          document.querySelector(".sneak-peek")
-        ) {
+        if (document.querySelector(".sidebar")) {
           document.querySelector(".sidebar").remove();
+        }
+        if (document.querySelector(".sneak-peek")) {
           document.querySelector(".sneak-peek").remove();
         }
 
@@ -187,8 +196,10 @@ async function captureFrame(bool) {
     const frameDataURL = canvas.toDataURL("image/png");
     // Send the frame to the background script
     if (bool) {
+      const videoID = GetYoutubeVideoId(document.URL);
+
       sendMessageToBackground({
-        action: "processFrame",
+        action: videoID,
         dataURL: frameDataURL,
       });
     }
@@ -212,12 +223,6 @@ function GetYoutubeVideoId(URL) {
   return video_id;
 }
 
-//-----------------------------Create Settings Panel------------------------------------
-// ... (rest of your code)
-
-// Fetch categories and then build and append the settings panel
-
-// ... (rest of your code)
 //--------------------------Handle Video Playback Events------------------------------
 
 // Function to handle video play and pause events
@@ -234,6 +239,7 @@ function handleVideoPlayback() {
       if (document.querySelector(".box")) {
         removeBookMarkSlide();
       }
+
       //Function call to remove annotations
       removeAnnotations();
       setTimeout(() => {

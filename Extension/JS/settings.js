@@ -70,7 +70,7 @@ function createSettingsPanel(categories) {
   categories.forEach((category) => {
     innerHTML += `
                     <label>
-                      <input type="checkbox" value="${category}"> ${category} 
+                      <input type="checkbox"  value="${category}" checked> ${category} 
                     </label>
                   `;
   });
