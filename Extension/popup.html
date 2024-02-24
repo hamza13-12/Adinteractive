@@ -1,12 +1,26 @@
-<!-- popup.html -->
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>Extension Popup</title>
-    <link rel="stylesheet" href="styles/popup.css" />
-  </head>
-  <body>
-    <button id="toggleButton">Toggle Extension</button>
-  </body>
-  <script src="popup.js"></script>
+<head>
+  <title>Extension Popup</title>
+  <link rel="stylesheet" href="styles/popup.css" />
+</head>
+<body>
+  <div class="popup-container">
+    <div class="header">
+      <img id="logo" alt="Logo" class="logo" />
+    </div>
+    <div class="content">
+      <p class="instruction">Scroll to enable extension</p>
+      <label class="switch">
+        <input type="checkbox" id="toggleButton">
+        <span class="slider round"></span>
+      </label>
+    </div>
+    <div class="footer">
+      All rights reserved © Adinteractive
+    </div>
+  </div>
+  <iframe id="firebase-sandbox" src="sandbox.html" style="display:none;"></iframe>
+  <script src="JS/popup.js"></script>
+</body>
 </html>

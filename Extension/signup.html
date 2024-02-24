@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up</title>
+    <link rel="stylesheet" href="styles/signup.css" />
+</head>
+
+<body>
+    <div id="signup-container">
+        <img id="logo" alt="Logo" class="logo" /> <!-- Update path -->
+        <div id="signup-error" style="color: red;"></div> <!-- Error display area -->
+        <input type="text" id="signup-name" placeholder="Name">
+        <input type="email" id="signup-email" placeholder="Email Address">
+        <input type="password" id="signup-password" placeholder="Password">
+        <button id="signup-btn">Sign Up</button>
+        <p id="show-login-btn">Already a user? Login</p> <!-- Changed to paragraph with clickable event in JS -->
+    </div>
+
+    <!-- Sandbox iframe for Firebase interactions -->
+    <iframe id="firebase-sandbox" src="sandbox.html" style="display:none;"></iframe>
+
+    <script src="JS/signup.js"></script>
+</body>
+
+</html>

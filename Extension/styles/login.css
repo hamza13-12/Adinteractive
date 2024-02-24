@@ -1,0 +1,65 @@
+/* login.css */
+body, html {
+    margin: 0;
+    padding: 0;
+    background-color: #4A90E2; /* Adjust to match your design color */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    font-family: Arial, sans-serif;
+}
+
+#login-container {
+    background-color: #4A90E2;
+    padding: 40px;
+    border-radius: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 300px;
+}
+
+.logo {
+    height: 64px;
+    width: 64px;
+    margin-bottom: 24px;
+    background-image: url('path_to_your_logo/logo.png'); /* Update with the correct path */
+    background-size: cover;
+}
+
+input[type="email"], input[type="password"] {
+    width: 100%;
+    padding: 15px; /* Adjust padding for size */
+    margin: 10px 0; /* Adjust margin for spacing */
+    border: 1px solid #ccc;
+    border-radius: 25px; /* Rounded borders for input fields */
+    box-sizing: border-box;
+    font-size: 1em; /* Adjust font size if necessary */
+}
+
+button {
+    width: calc(100% - 30px); /* Adjust width to allow for padding */
+    background-color: #5cb85c;
+    color: white;
+    padding: 15px 20px;
+    margin: 10px 15px; /* Adjust margin to center the button */
+    border: none;
+    border-radius: 25px; /* Rounded borders for buttons */
+    cursor: pointer;
+    font-size: 1em; /* Adjust font size if necessary */
+    outline: none; /* Remove outline on focus */
+}
+
+button:hover {
+    opacity: 0.8;
+}
+
+button#show-signup-btn {
+    background-color: #ffffff;
+    color: #5cb85c;
+    border: 2px solid #5cb85c;
+}
+
+/* Additional styles for other elements can be added here */
