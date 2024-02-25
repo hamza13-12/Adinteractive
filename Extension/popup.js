@@ -1,37 +1,34 @@
 // popup.js
+
 document.addEventListener("DOMContentLoaded", function () {
-  const toggleButton = document.getElementById("toggleButton");
+  const logoImage = document.getElementById("logo");
+  const toggleSwitch = document.getElementById("toggleButton");
+
+  // Set the src for the logo
+  logoImage.src = chrome.runtime.getURL("images/logo_128.png");
 
   // Retrieve extension state from storage
   chrome.storage.local.get(["enabled"], function (result) {
     const isEnabled = result.enabled || false;
-    updateToggleButton(isEnabled);
+    toggleSwitch.checked = isEnabled; // Set the state of the switch
+
+    // Initialize Firebase if the extension is enabled
+    if (isEnabled) {
+      console.log("Extension is enabled.");
+    } else {
+      console.log("Extension is disabled.");
+    }
   });
 
-  // Toggle button click event
-  toggleButton.addEventListener("click", function () {
-    // Toggle extension state
-    chrome.storage.local.get(["enabled"], function (result) {
-      const isEnabled = result.enabled || false;
-      chrome.storage.local.set({ enabled: !isEnabled });
-      updateToggleButton(!isEnabled);
+  // Toggle switch change event
+  toggleSwitch.addEventListener("change", function () {
+    const isEnabled = toggleSwitch.checked;
+    chrome.storage.local.set({ enabled: isEnabled }, () => {
       if (isEnabled) {
-        // Your extension functionality goes here
         console.log("Extension is enabled.");
       } else {
         console.log("Extension is disabled.");
       }
     });
   });
-
-  // Function to update the toggle button text and color
-  function updateToggleButton(isEnabled) {
-    toggleButton.textContent = isEnabled
-      ? "Disable Extension"
-      : "Enable Extension";
-    toggleButton.style.backgroundColor = isEnabled ? "red" : "green";
-  }
-});
-chrome.storage.local.get(["enabled"], function (result) {
-  const isEnabled = result.enabled || false;
 });

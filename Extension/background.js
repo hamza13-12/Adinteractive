@@ -9,7 +9,6 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     };
     console.log(data);
     // Log the JSON request
-    console.log(data);
     fetch(apiUrl, {
       method: "POST",
       headers: {

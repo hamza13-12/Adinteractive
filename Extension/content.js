@@ -22,7 +22,8 @@ function checkAndExecute() {
 
     // Assuming DataBaseApiCallback is async and uses a callback
     chrome.storage.local.get(["enabled"], function (result) {
-      const isEnabled = result.enabled || false;
+      var isEnabled = result.enabled || false;
+      console.log("Extension enabled in check:", isEnabled);
       logo();
       if (isInDatabase === true) {
         document.querySelector("#Adinteractive-logo").src =
@@ -36,10 +37,11 @@ function checkAndExecute() {
         // Check if both conditions are met
         insertSidebar();
         toggleSidebar("none");
-        handleVideoPlayback();
+
         document
           .getElementById("bookmarkButton")
           .addEventListener("click", BookMarkSlide);
+
         getCategoriesFromBackgroundScript()
           .then((categories) => {
             const settingsPanel = createSettingsPanel(categories); // This function should return the created settings panel element
@@ -90,12 +92,16 @@ function checkAndExecute() {
 
         // Add logic here if you need to handle the disabled state or video not in database
       }
+      console.log("please work", isEnabled);
+      handleVideoPlayback(isEnabled);
     });
   });
 }
 
 // Initial check when the script loads
 checkAndExecute(); // This will run your checks right away when the script is loaded
+
+// Function to handle changes in the storage
 
 // Function to handle changes in the storage
 function handleStorageChanges(changes, namespace) {
@@ -105,7 +111,6 @@ function handleStorageChanges(changes, namespace) {
     }
   }
 }
-
 // Add an event listener for storage changes
 chrome.storage.onChanged.addListener(handleStorageChanges);
 
@@ -166,7 +171,7 @@ async function getCategoriesFromBackgroundScript() {
 function sendMessageToBackground(message) {
   (async () => {
     const response = await chrome.runtime.sendMessage(message);
-    console.log(response);
+
     if (response && response.data) {
       console.log("Response from Frame API:", response);
       //removeAnnotations();
@@ -195,7 +200,7 @@ async function captureFrame(bool) {
     // Convert the frame to a data URL
     const frameDataURL = canvas.toDataURL("image/png");
     // Send the frame to the background script
-    if (bool) {
+    if (bool === true) {
       const videoID = GetYoutubeVideoId(document.URL);
 
       sendMessageToBackground({
@@ -222,30 +227,46 @@ function GetYoutubeVideoId(URL) {
   }
   return video_id;
 }
-
-//--------------------------Handle Video Playback Events------------------------------
-
 // Function to handle video play and pause events
 function handleVideoPlayback() {
   const video = document.querySelector("video");
   if (video) {
-    video.addEventListener("pause", () => {
-      toggleSidebar("flex");
-      document.querySelector(".sidebar").style.animationName = "fadeIn";
-      captureFrame(true);
-    });
-    video.addEventListener("play", () => {
-      document.querySelector(".sidebar").style.animationName = "fadeOut";
-      if (document.querySelector(".box")) {
-        removeBookMarkSlide();
-      }
+    // Only proceed if the extension is enabled
+    // Check if event listeners have already been added
+    if (!video.dataset.videoListenersAdded) {
+      // Add event listeners only if they haven't been added before
+      video.addEventListener("pause", (e) => {
+        toggleSidebar("flex");
+        try {
+          document.querySelector(".sidebar").style.animationName = "fadeIn";
+        } catch (error) {
+          // console.log("Extension could not find the sidebar");
+        }
 
-      //Function call to remove annotations
-      removeAnnotations();
-      setTimeout(() => {
-        toggleSidebar("none");
-      }, 500);
-    });
+        chrome.storage.local.get(["enabled"], function (result) {
+          var isEnabled = result.enabled || false;
+          console.log("idk why capture frame is working enabled", isEnabled);
+          if (isEnabled) captureFrame(true); // Pass isEnabled to handleVideoPlayback
+        });
+      });
+      video.addEventListener("play", () => {
+        try {
+          document.querySelector(".sidebar").style.animationName = "fadeOut";
+        } catch (error) {
+          // console.log("Extension could not find the sidebar");
+        }
+        if (document.querySelector(".box")) {
+          removeBookMarkSlide();
+        }
+
+        //Function call to remove annotations
+        removeAnnotations();
+        setTimeout(() => {
+          toggleSidebar("none");
+        }, 500);
+      });
+      video.dataset.videoListenersAdded = true; // Mark event listeners as added
+    }
 
     video.addEventListener("seeked", () => {
       if (video.paused) {
