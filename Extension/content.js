@@ -20,10 +20,11 @@ function checkAndExecute() {
   DataBaseApiCallback(DataBaseApi, (isInDatabase, data) => {
     console.log("Video in database:", isInDatabase);
 
-    // Assuming DataBaseApiCallback is async and uses a callback
-    chrome.storage.local.get(["enabled"], function (result) {
+    chrome.storage.local.get(["enabled", "loggedIn"], function (result) {
       var isEnabled = result.enabled || false;
+      var isLoggedIn = result.loggedIn || false; // Get the loggedIn state
       console.log("Extension enabled in check:", isEnabled);
+      console.log("User logged in check:", isLoggedIn); // Log the loggedIn state for debugging
       logo();
       if (isInDatabase === true) {
         document.querySelector("#Adinteractive-logo").src =
@@ -33,7 +34,7 @@ function checkAndExecute() {
           chrome.runtime.getURL("images/graylogo_128.png");
       }
 
-      if (isEnabled && isInDatabase) {
+      if (isEnabled && isInDatabase && isLoggedIn) {
         // Check if both conditions are met
         insertSidebar();
         toggleSidebar("none");
@@ -102,15 +103,14 @@ function checkAndExecute() {
 checkAndExecute(); // This will run your checks right away when the script is loaded
 
 // Function to handle changes in the storage
-
-// Function to handle changes in the storage
 function handleStorageChanges(changes, namespace) {
   for (let key in changes) {
-    if (key === "enabled") {
+    if (key === "enabled" || key === "loggedIn") {
       checkAndExecute(); // Check conditions again if there's a change in the storage
     }
   }
 }
+
 // Add an event listener for storage changes
 chrome.storage.onChanged.addListener(handleStorageChanges);
 
@@ -243,10 +243,11 @@ function handleVideoPlayback() {
           // console.log("Extension could not find the sidebar");
         }
 
-        chrome.storage.local.get(["enabled"], function (result) {
+        chrome.storage.local.get(["enabled", "loggedIn"], function (result) {
           var isEnabled = result.enabled || false;
+          var isLoggedIn = result.loggedIn || false;
           console.log("idk why capture frame is working enabled", isEnabled);
-          if (isEnabled === true) {
+          if (isEnabled === true && isLoggedIn === true) {
             captureFrame(true);
           } // Pass isEnabled to handleVideoPlayback
         });
