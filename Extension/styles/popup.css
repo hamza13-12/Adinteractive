@@ -1,11 +1,10 @@
 /* popup.css */
-body,
-html {
+body, html {
   margin: 0;
   padding: 0;
-  background-color: #4a90e2; /* Adjust the color to match your design */
+  background-color: #4A90E2; /* Adjust the color to match your design */
   color: white; /* Text color */
-  font-family: "Arial", sans-serif;
+  font-family: 'Arial', sans-serif;
   width: 300px; /* Set a fixed width for the popup */
   user-select: none; /* Prevent text selection */
 }
@@ -54,7 +53,7 @@ html {
   left: 0;
   right: 0;
   background-color: #ccc; /* Background of the slider */
-  transition: 0.4s;
+  transition: .4s;
   border-radius: 34px; /* Rounded edges */
 }
 
@@ -66,13 +65,13 @@ html {
   left: 4px;
   bottom: 4px;
   background-color: white;
-  transition: 0.4s;
+  transition: .4s;
   border-radius: 50%; /* Circle shape */
 }
 
 /* Color of slider when it's in 'on' position */
 input:checked + .slider {
-  background-color: #81c784; /* On position slider color */
+  background-color: #81C784; /* On position slider color */
 }
 
 input:checked + .slider:before {
@@ -82,3 +81,5 @@ input:checked + .slider:before {
 .footer {
   font-size: 12px;
 }
+
+/* Add any additional custom styles for other elements if necessary */

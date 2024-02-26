@@ -1,24 +1,26 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>Extension Popup</title>
-    <link rel="stylesheet" href="styles/popup.css" />
-  </head>
-  <body>
-    <div class="popup-container">
-      <div class="header">
-        <!-- Leave the src attribute empty or remove it entirely -->
-        <img id="logo" alt="Logo" class="logo" />
-      </div>
-      <div class="content">
-        <p class="instruction">Scroll to enable extension</p>
-        <label class="switch">
-          <input type="checkbox" id="toggleButton" />
-          <span class="slider round"></span>
-        </label>
-      </div>
-      <div class="footer">All rights reserved © Adinteractive</div>
+<head>
+  <title>Extension Popup</title>
+  <link rel="stylesheet" href="styles/popup.css" />
+</head>
+<body>
+  <div class="popup-container">
+    <div class="header">
+      <img id="logo" alt="Logo" class="logo" />
     </div>
-    <script src="popup.js"></script>
-  </body>
+    <div class="content">
+      <p class="instruction">Scroll to enable extension</p>
+      <label class="switch">
+        <input type="checkbox" id="toggleButton">
+        <span class="slider round"></span>
+      </label>
+    </div>
+    <div class="footer">
+      All rights reserved © Adinteractive
+    </div>
+  </div>
+  <iframe id="firebase-sandbox" src="sandbox.html" style="display:none;"></iframe>
+  <script src="JS/popup.js"></script>
+</body>
 </html>

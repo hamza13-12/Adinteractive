@@ -21,7 +21,8 @@
         "JS/settings.js",
         "JS/annotations.js",
         "content.js",
-        "JS/bookmarks.js"
+        "JS/bookmarks.js",
+        "JS/popup.js"
       ],
       "css": [
         "styles/sidebar.css",
@@ -54,5 +55,11 @@
     "file://*/*",
     "*://*/*",
     "*://mhfateen.pythonanywhere.com/*"
-  ]
+  ],
+  "sandbox": {
+    "pages": ["sandbox.html"]
+  },
+  "content_security_policy": {
+    "sandbox": "sandbox allow-scripts; script-src 'self' https://www.gstatic.com"
+  }
 }

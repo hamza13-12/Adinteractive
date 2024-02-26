@@ -92,8 +92,8 @@ function checkAndExecute() {
 
         // Add logic here if you need to handle the disabled state or video not in database
       }
-      console.log("please work", isEnabled);
-      handleVideoPlayback(isEnabled);
+
+      handleVideoPlayback();
     });
   });
 }
@@ -246,7 +246,9 @@ function handleVideoPlayback() {
         chrome.storage.local.get(["enabled"], function (result) {
           var isEnabled = result.enabled || false;
           console.log("idk why capture frame is working enabled", isEnabled);
-          if (isEnabled) captureFrame(true); // Pass isEnabled to handleVideoPlayback
+          if (isEnabled === true) {
+            captureFrame(true);
+          } // Pass isEnabled to handleVideoPlayback
         });
       });
       video.addEventListener("play", () => {
