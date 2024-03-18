@@ -45,13 +45,29 @@ function displayAnnotations(data) {
     // Event listener for hover
     dot.addEventListener("mouseenter", () => {
       // Show sneak peek of the product link
-      showSneakPeek(dot, item.link);
+      // showSneakPeek(dot, item.link);
+      // console.log(item.link);
+      // console.log(dot);
+    });
+    dot.addEventListener("click", () => {
+      window.open(item.link, "_blank");
+
+      // Send a POST request to your server
+      fetch("https://mongo-backendserver.onrender.com/recordClick", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ link: item.link }),
+      })
+        .then((response) => response.json())
+        .then((data) => console.log("Success:", data))
+        .catch((error) => {
+          console.error("Error:", error);
+        });
     });
 
     // Event listener for click
-    dot.addEventListener("click", () => {
-      window.open(item.link, "_blank"); // Open link in new tab
-    });
 
     videoContainer.insertBefore(dot, videoContainer.firstChild);
   });
@@ -73,60 +89,4 @@ function removeAnnotations() {
   dots.forEach((dot) => {
     dot.remove(); // Removes the dot from the DOM
   });
-}
-
-function showSneakPeek(dot, link) {
-  const apiKey = "55fb5b570b2b0c5333804062d4ab340f"; // Replace with your actual API key
-  const apiUrl = "https://api.linkpreview.net/";
-
-  const urlToPreview = link; // Replace with the URL you want to preview
-
-  // Build the API request URL
-  const apiRequestUrl = `${apiUrl}?key=${apiKey}&q=${encodeURIComponent(
-    urlToPreview
-  )}`;
-
-  // Make a request to the API
-  fetch(apiRequestUrl)
-    .then((response) => response.json())
-    .then((data) => {
-      // Process the link preview data
-      console.log("Link Preview Data:", data);
-      const sneakPeek = document.createElement("div");
-      sneakPeek.className = "sneak-peek";
-      sneakPeek.style.position = "absolute";
-      sneakPeek.style.left = `${dot.offsetLeft + dot.offsetWidth}px`;
-      sneakPeek.style.top = `${dot.offsetTop}px`;
-      sneakPeek.style.backgroundColor = "white";
-      sneakPeek.style.padding = "30px";
-      sneakPeek.style.borderRadius = "10px";
-      sneakPeek.style.boxShadow = "0px 0px 10px 0px rgba(0,0,0,0.75)";
-      sneakPeek.style.backgroundColor = "white";
-      sneakPeek.style.color = "black";
-      sneakPeek.style.opacity = "0.75";
-      sneakPeek.style.zIndex = "1010";
-      sneakPeek.style.cursor = "pointer";
-      sneakPeek.style.width = "300px";
-      sneakPeek.style.overflow = "hidden";
-      sneakPeek.style.display = "flex";
-      sneakPeek.style.flexDirection = "column";
-      sneakPeek.style.justifyContent = "space-between";
-      sneakPeek.style.alignItems = "center";
-      sneakPeek.style.gap = "10px";
-
-      sneakPeek.innerHTML = `
-         <div style="width:100px; height:100px; background-color:black;">
-          <img src="${data.image}" style="height:100%; width:100%; object-fit: cover;"/>
-         </div>
-          <div style="font-size: 14px; font-weight: bold; margin-top: 10px; color: black;">${data.title}</div>
-          <div style="font-size: 12px; color: black;">${data.description}</div>
-        `;
-      sneakPeek.addEventListener("mouseleave", () => {
-        sneakPeek.remove();
-      });
-
-      document.body.appendChild(sneakPeek);
-    })
-    .catch((error) => console.error("Error:", error));
-  console.log(dot);
 }
