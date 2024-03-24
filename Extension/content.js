@@ -204,6 +204,7 @@ async function captureFrame(bool) {
       const videoID = GetYoutubeVideoId(document.URL);
 
       sendMessageToBackground({
+        timestamp: video.currentTime,
         action: videoID,
         dataURL: frameDataURL,
       });
@@ -279,3 +280,5 @@ function handleVideoPlayback() {
     });
   }
 }
+
+// Function to insert the sidebar

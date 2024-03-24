@@ -51,7 +51,6 @@ function displayAnnotations(data) {
     });
     dot.addEventListener("click", () => {
       window.open(item.link, "_blank");
-
       // Send a POST request to your server
       fetch("https://mongo-backendserver.onrender.com/recordClick", {
         method: "POST",
