@@ -7,9 +7,10 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
       movieName: request.action, // Hardcoded for now
     };
     let a = request.timestamp;
-    const intNumber = a.toFixed(1);
+    let intNumber = a.toFixed(1);
+    console.log("TimeintNumber", intNumber);
+    intNumber = Number(intNumber);
 
-    try {
       fetch("https://mongo-backendserver.onrender.com/links", {
         method: "POST",
         headers: {
@@ -29,24 +30,8 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
           console.error("Error:", error);
           sendResponse({ farewell: "error", error: error });
         });
-    } finally {
-      fetch("http://127.0.0.1:5000", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          console.log("Success:", data);
-          sendResponse({ farewell: "response received", data: data });
-        })
-        .catch((error) => {
-          console.error("Error:", error);
-          sendResponse({ farewell: "error", error: error });
-        });
-    }
+
+ 
 
     // Indicate that we want to respond asynchronously
     return true;
